@@ -1,94 +1,104 @@
-# 10x Astro Starter
+# VibeTravels
 
-A modern, opinionated starter template for building fast, accessible, and AI-friendly web applications.
+![Astro](https://img.shields.io/badge/astro-5.x-blueviolet?logo=astro) ![TypeScript](https://img.shields.io/badge/typescript-5.x-3178c6?logo=typescript) ![License](https://img.shields.io/badge/license-MIT-lightgrey)
+
+A web-based application that turns simple travel notes into actionable, day-level trip itineraries. VibeTravels helps couples and small groups quickly plan trips by combining note-taking, preference management, and AI-powered itinerary generation.
+
+---
+
+## Table of Contents
+1. [Tech Stack](#tech-stack)
+2. [Getting Started Locally](#getting-started-locally)
+3. [Available Scripts](#available-scripts)
+4. [Project Scope](#project-scope)
+5. [Project Status](#project-status)
+6. [License](#license)
+
+---
 
 ## Tech Stack
 
-- [Astro](https://astro.build/) v5.5.5 - Modern web framework for building fast, content-focused websites
-- [React](https://react.dev/) v19.0.0 - UI library for building interactive components
-- [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4.0.17 - Utility-first CSS framework
+Frontend:
+- **Astro&nbsp;5** – lightning-fast, component-agnostic framework
+- **React&nbsp;19** – interactive UI components
+- **TypeScript&nbsp;5** – type-safe JavaScript
+- **Tailwind&nbsp;CSS&nbsp;4** – utility-first styling
+- **shadcn/ui** – accessible component library
 
-## Prerequisites
+Backend & Infrastructure:
+- **Supabase** – PostgreSQL database, Auth, Storage
+- **Openrouter.ai** – access to multiple AI models
+- **GitHub Actions** – CI / CD pipelines
+- **Docker + DigitalOcean** – deployment target
 
-- Node.js v22.14.0 (as specified in `.nvmrc`)
-- npm (comes with Node.js)
+---
 
-## Getting Started
+## Getting Started Locally
 
-1. Clone the repository:
-
-```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
-```
-
-2. Install dependencies:
-
-```bash
-npm install
-```
-
-3. Run the development server:
+### Prerequisites
+- **Node.js 22.14.0** (see `.nvmrc`)
+- **pnpm** or **npm** ≥ 9
 
 ```bash
+# clone the repository
+git clone https://github.com/<your-org>/vibetravels.git
+cd vibetravels
+
+# install dependencies
+npm install  # or pnpm install
+
+# start the development server
 npm run dev
 ```
 
-4. Build for production:
+The app will be available at `http://localhost:4321` by default.
+
+To build a production bundle and preview it locally:
 
 ```bash
 npm run build
+npm run preview
 ```
+
+---
 
 ## Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
+| Script            | Purpose                                   |
+|-------------------|-------------------------------------------|
+| `npm run dev`     | Start Astro in development mode with hot reload |
+| `npm run build`   | Generate a static production build            |
+| `npm run preview` | Serve the production build locally            |
+| `npm run astro`   | Run arbitrary Astro CLI commands              |
+| `npm run lint`    | Run ESLint on the project                    |
+| `npm run lint:fix`| Lint and automatically fix problems          |
+| `npm run format`  | Format files with Prettier                   |
 
-## Project Structure
+---
 
-```md
-.
-├── src/
-│   ├── layouts/    # Astro layouts
-│   ├── pages/      # Astro pages
-│   │   └── api/    # API endpoints
-│   ├── components/ # UI components (Astro & React)
-│   └── assets/     # Static assets
-├── public/         # Public assets
-```
+## Project Scope
 
-## AI Development Support
+The MVP focuses on the following core functionality:
+1. **Auth** – email & password sign-up / sign-in (Supabase Auth)
+2. **Trip Notes CRUD** – destination, dates, budget, details, group size
+3. **Preferences** – user travel preferences stored privately
+4. **AI-Generated Itineraries** – day-level plans created from notes
+5. **Progress Feedback & Error Handling** – generator SLA ≤ 60 s with graceful fallback
+6. **Data Deletion** – cascade delete on account removal
 
-This project is configured with AI development tools to enhance the development experience, providing guidelines for:
+Boundaries (MVP will **not** include):
+- Content sharing, multimedia upload, advanced scheduling, version history, or in-app feedback collection.
 
-- Project structure
-- Coding practices
-- Frontend development
-- Styling with Tailwind
-- Accessibility best practices
-- Astro and React guidelines
+See `.ai/prd.md` for full details.
 
-### Cursor IDE
+---
 
-The project includes AI rules in `.cursor/rules/` directory that help Cursor IDE understand the project structure and provide better code suggestions.
+## Project Status
 
-### GitHub Copilot
+`🚧` **In active development** – core features are being built toward the first public MVP release. Follow the [project board](https://github.com/<your-org>/vibetravels/projects) for up-to-date progress.
 
-AI instructions for GitHub Copilot are available in `.github/copilot-instructions.md`
-
-### Windsurf
-
-The `.windsurfrules` file contains AI configuration for Windsurf.
-
-## Contributing
-
-Please follow the AI guidelines and coding practices defined in the AI configuration files when contributing to this project.
+---
 
 ## License
 
-MIT
+This project is licensed under the **MIT License** – see the [LICENSE](LICENSE) file for details.
