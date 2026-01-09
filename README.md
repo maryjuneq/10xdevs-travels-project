@@ -83,11 +83,6 @@ The MVP focuses on the following core functionality:
 2. **Trip Notes CRUD** – destination, dates, budget, details, group size
 3. **Preferences** – user travel preferences stored privately
 4. **AI-Generated Itineraries** – day-level plans created from notes
-5. **Progress Feedback & Error Handling** – generator SLA ≤ 60 s with graceful fallback
-6. **Data Deletion** – cascade delete on account removal
-
-Boundaries (MVP will **not** include):
-- Content sharing, multimedia upload, advanced scheduling, version history, or in-app feedback collection.
 
 See `.ai/prd.md` for full details.
 
