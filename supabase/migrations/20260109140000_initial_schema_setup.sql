@@ -1,0 +1,437 @@
+-- =====================================================
+-- Migration: Initial Schema Setup for VibeTravels MVP
+-- Created: 2026-01-09 14:00:00 UTC
+-- =====================================================
+--
+-- Purpose:
+--   Sets up the core database schema for the VibeTravels application,
+--   including trip notes, itineraries, AI generation jobs, and user preferences.
+--
+-- Affected Tables:
+--   - trip_notes (new)
+--   - itineraries (new)
+--   - ai_generation_jobs (new)
+--   - user_preferences (new)
+--
+-- Dependencies:
+--   - Requires Supabase Auth (auth.users table)
+--
+-- Special Considerations:
+--   - All foreign keys use ON DELETE CASCADE for automatic cleanup
+--   - Row Level Security (RLS) is enabled on all tables
+--   - Auto-updating triggers for updated_at timestamps
+--   - Performance indexes for common query patterns
+--
+-- =====================================================
+
+-- =====================================================
+-- Section 1: Custom Types (Enums)
+-- =====================================================
+
+-- Enum for tracking the status of AI itinerary generation jobs
+-- Values represent the lifecycle of a generation request
+create type generation_status as enum (
+  'queued',     -- Job is waiting to be processed
+  'running',    -- Job is currently being executed
+  'succeeded',  -- Job completed successfully
+  'failed'      -- Job encountered an error
+);
+
+-- Enum for categorizing user travel preferences
+-- Helps organize and filter user preferences by type
+create type preference_category as enum (
+  'food',       -- Food and dining preferences
+  'culture',    -- Cultural interests and activities
+  'adventure',  -- Adventure and outdoor activities
+  'other'       -- Miscellaneous preferences (default)
+);
+
+-- =====================================================
+-- Section 2: Core Tables
+-- =====================================================
+
+-- -----------------------------------------------------
+-- Table: trip_notes
+-- -----------------------------------------------------
+-- Stores user-created trip planning notes with travel parameters.
+-- Each note represents a potential or planned trip with basic details
+-- that will be used to generate an itinerary.
+--
+-- Business Rules:
+--   - A user cannot have duplicate trips with the same destination and start date
+--   - Group size and trip length must be positive numbers
+--   - Budget is optional but must be positive if provided
+--   - Currency should follow ISO 4217 standard (e.g., 'USD', 'EUR')
+--
+create table trip_notes (
+  id bigserial primary key,
+  
+  -- References the authenticated user who owns this trip note
+  user_id uuid not null references auth.users(id) on delete cascade,
+  
+  -- Destination can be a city, country, or region
+  destination text not null,
+  
+  -- Flexible date range for trip planning
+  -- earliest_start_date: The earliest date the trip can begin
+  -- latest_start_date: The latest date the trip can begin
+  earliest_start_date date not null,
+  latest_start_date date not null,
+  
+  -- Number of people traveling (must be at least 1)
+  group_size smallint not null check (group_size > 0),
+  
+  -- Approximate duration of the trip in days (must be at least 1)
+  approximate_trip_length smallint not null check (approximate_trip_length > 0),
+  
+  -- Optional budget information
+  -- budget_amount: Numeric value (must be positive if provided)
+  -- currency: ISO 4217 currency code (3 characters)
+  budget_amount integer check (budget_amount > 0),
+  currency char(3),
+  
+  -- Additional freeform details about the trip
+  details text,
+  
+  -- Timestamps for auditing and sorting
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  
+  -- Prevent duplicate trips with the same destination and start date for a user
+  constraint unique_user_destination_date unique (user_id, destination, earliest_start_date)
+);
+
+-- -----------------------------------------------------
+-- Table: itineraries
+-- -----------------------------------------------------
+-- Stores AI-generated travel itineraries.
+-- Each itinerary is linked to exactly one trip_note (1:1 relationship).
+--
+-- Business Rules:
+--   - One itinerary per trip note (enforced by unique constraint on trip_note_id)
+--   - Itinerary text contains the full generated travel plan
+--   - suggested_trip_length may differ from the approximate_trip_length in trip_notes
+--
+create table itineraries (
+  id bigserial primary key,
+  
+  -- Each itinerary belongs to exactly one trip note
+  -- The unique constraint enforces the 1:1 relationship
+  trip_note_id bigserial not null unique references trip_notes(id) on delete cascade,
+  
+  -- Denormalized user_id for efficient queries and RLS policies
+  user_id uuid not null references auth.users(id) on delete cascade,
+  
+  -- AI may suggest a different trip length based on the destination
+  suggested_trip_length smallint,
+  
+  -- The full itinerary text generated by AI
+  -- Could be markdown, plain text, or structured format
+  itinerary text not null,
+  
+  -- Timestamps for auditing
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- -----------------------------------------------------
+-- Table: ai_generation_jobs
+-- -----------------------------------------------------
+-- Tracks the status and performance of AI itinerary generation jobs.
+-- Provides visibility into job lifecycle, duration, and errors.
+--
+-- Business Rules:
+--   - Each job is associated with a user and a trip note
+--   - Status tracks progression through the generation pipeline
+--   - duration_ms is populated only for completed jobs
+--   - error_text is populated only for failed jobs
+--
+create table ai_generation_jobs (
+  id bigserial primary key,
+  
+  -- The user who requested the generation
+  user_id uuid not null references auth.users(id) on delete cascade,
+  
+  -- The trip note being processed
+  trip_note_id bigserial not null references trip_notes(id) on delete cascade,
+  
+  -- Current status of the generation job
+  status generation_status not null,
+  
+  -- Duration in milliseconds (populated when job completes)
+  duration_ms integer,
+  
+  -- Error message if the job failed
+  error_text text,
+  
+  -- Timestamps for tracking job lifecycle
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- -----------------------------------------------------
+-- Table: user_preferences
+-- -----------------------------------------------------
+-- Stores user travel preferences to personalize itinerary generation.
+-- Users can have multiple preferences across different categories.
+--
+-- Business Rules:
+--   - Preferences are organized by category for easier filtering
+--   - preference_text is freeform to allow flexible input
+--   - Multiple preferences per user are allowed and encouraged
+--
+create table user_preferences (
+  id bigserial primary key,
+  
+  -- The user who owns this preference
+  user_id uuid not null references auth.users(id) on delete cascade,
+  
+  -- Category helps organize preferences (defaults to 'other')
+  category preference_category not null default 'other',
+  
+  -- Freeform text describing the preference
+  -- Examples: "I prefer vegetarian food", "I love museums", "I enjoy hiking"
+  preference_text text not null,
+  
+  -- Timestamps for auditing
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- =====================================================
+-- Section 3: Triggers for Auto-Updating Timestamps
+-- =====================================================
+
+-- Function to automatically update the updated_at column
+-- This function will be called by triggers before any update operation
+create or replace function update_updated_at_column()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+-- Trigger for trip_notes table
+-- Automatically updates the updated_at timestamp whenever a row is modified
+create trigger update_trip_notes_updated_at
+  before update on trip_notes
+  for each row
+  execute function update_updated_at_column();
+
+-- Trigger for itineraries table
+-- Automatically updates the updated_at timestamp whenever a row is modified
+create trigger update_itineraries_updated_at
+  before update on itineraries
+  for each row
+  execute function update_updated_at_column();
+
+-- Trigger for ai_generation_jobs table
+-- Automatically updates the updated_at timestamp whenever a row is modified
+create trigger update_ai_generation_jobs_updated_at
+  before update on ai_generation_jobs
+  for each row
+  execute function update_updated_at_column();
+
+-- Trigger for user_preferences table
+-- Automatically updates the updated_at timestamp whenever a row is modified
+create trigger update_user_preferences_updated_at
+  before update on user_preferences
+  for each row
+  execute function update_updated_at_column();
+
+-- =====================================================
+-- Section 4: Performance Indexes
+-- =====================================================
+
+-- Indexes for trip_notes table
+-- These indexes optimize common query patterns for trip notes
+
+-- Index for fetching all trip notes for a specific user
+-- Used in: user dashboard, trip list views
+create index idx_trip_notes_user on trip_notes(user_id);
+
+-- Composite index for filtering trips by user and upcoming dates
+-- Used in: upcoming trips queries, date-based filtering
+create index idx_trip_notes_user_start on trip_notes(user_id, earliest_start_date);
+
+-- Index for itineraries table
+-- Optimizes fetching all itineraries for a specific user
+-- Used in: user itinerary list, dashboard views
+create index idx_itineraries_user on itineraries(user_id);
+
+-- Indexes for ai_generation_jobs table
+-- These indexes support job monitoring and status filtering
+
+-- Index for fetching all jobs for a specific user
+-- Used in: user job history, monitoring dashboards
+create index idx_jobs_user on ai_generation_jobs(user_id);
+
+-- Index for filtering jobs by status
+-- Used in: admin dashboards, job queue management, monitoring failed jobs
+create index idx_jobs_status on ai_generation_jobs(status);
+
+-- Index for user_preferences table
+-- Optimizes loading all preferences for a specific user
+-- Used in: preference management UI, itinerary generation
+create index idx_preferences_user on user_preferences(user_id);
+
+-- =====================================================
+-- Section 5: Row Level Security (RLS)
+-- =====================================================
+
+-- Enable RLS on all tables to ensure data isolation and security
+-- Even though we're creating policies that allow user access,
+-- RLS must be explicitly enabled on each table
+alter table trip_notes enable row level security;
+alter table itineraries enable row level security;
+alter table ai_generation_jobs enable row level security;
+alter table user_preferences enable row level security;
+
+-- -----------------------------------------------------
+-- RLS Policies for trip_notes
+-- -----------------------------------------------------
+-- Users can only access their own trip notes.
+-- Policies are granular (one per operation) for flexibility and clarity.
+
+-- Allow authenticated users to view their own trip notes
+create policy "Authenticated users can select their own trip notes"
+  on trip_notes
+  for select
+  to authenticated
+  using (user_id = auth.uid());
+
+-- Allow authenticated users to create trip notes for themselves
+-- The user_id must match the authenticated user
+create policy "Authenticated users can insert their own trip notes"
+  on trip_notes
+  for insert
+  to authenticated
+  with check (user_id = auth.uid());
+
+-- Allow authenticated users to update their own trip notes
+create policy "Authenticated users can update their own trip notes"
+  on trip_notes
+  for update
+  to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+-- Allow authenticated users to delete their own trip notes
+create policy "Authenticated users can delete their own trip notes"
+  on trip_notes
+  for delete
+  to authenticated
+  using (user_id = auth.uid());
+
+-- -----------------------------------------------------
+-- RLS Policies for itineraries
+-- -----------------------------------------------------
+-- Users can only access itineraries for their own trip notes.
+
+-- Allow authenticated users to view their own itineraries
+create policy "Authenticated users can select their own itineraries"
+  on itineraries
+  for select
+  to authenticated
+  using (user_id = auth.uid());
+
+-- Allow authenticated users to create itineraries for their own trip notes
+-- The user_id must match the authenticated user
+create policy "Authenticated users can insert their own itineraries"
+  on itineraries
+  for insert
+  to authenticated
+  with check (user_id = auth.uid());
+
+-- Allow authenticated users to update their own itineraries
+create policy "Authenticated users can update their own itineraries"
+  on itineraries
+  for update
+  to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+-- Allow authenticated users to delete their own itineraries
+create policy "Authenticated users can delete their own itineraries"
+  on itineraries
+  for delete
+  to authenticated
+  using (user_id = auth.uid());
+
+-- -----------------------------------------------------
+-- RLS Policies for ai_generation_jobs
+-- -----------------------------------------------------
+-- Users can view and manage their own AI generation jobs.
+-- This table is primarily read-only for users, with system writes.
+
+-- Allow authenticated users to view their own generation jobs
+create policy "Authenticated users can select their own generation jobs"
+  on ai_generation_jobs
+  for select
+  to authenticated
+  using (user_id = auth.uid());
+
+-- Allow authenticated users to create generation jobs for themselves
+-- Typically created by the application, but users can trigger new jobs
+create policy "Authenticated users can insert their own generation jobs"
+  on ai_generation_jobs
+  for insert
+  to authenticated
+  with check (user_id = auth.uid());
+
+-- Allow authenticated users to update their own generation jobs
+-- Note: In practice, job updates are typically done by backend services
+-- This policy allows users to cancel jobs if needed
+create policy "Authenticated users can update their own generation jobs"
+  on ai_generation_jobs
+  for update
+  to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+-- Allow authenticated users to delete their own generation jobs
+create policy "Authenticated users can delete their own generation jobs"
+  on ai_generation_jobs
+  for delete
+  to authenticated
+  using (user_id = auth.uid());
+
+-- -----------------------------------------------------
+-- RLS Policies for user_preferences
+-- -----------------------------------------------------
+-- Users can fully manage their own preferences.
+
+-- Allow authenticated users to view their own preferences
+create policy "Authenticated users can select their own preferences"
+  on user_preferences
+  for select
+  to authenticated
+  using (user_id = auth.uid());
+
+-- Allow authenticated users to create their own preferences
+create policy "Authenticated users can insert their own preferences"
+  on user_preferences
+  for insert
+  to authenticated
+  with check (user_id = auth.uid());
+
+-- Allow authenticated users to update their own preferences
+create policy "Authenticated users can update their own preferences"
+  on user_preferences
+  for update
+  to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+-- Allow authenticated users to delete their own preferences
+create policy "Authenticated users can delete their own preferences"
+  on user_preferences
+  for delete
+  to authenticated
+  using (user_id = auth.uid());
+
+-- =====================================================
+-- End of Migration
+-- =====================================================
+
