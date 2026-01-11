@@ -64,7 +64,7 @@ This table is managed by Supabase Auth.
 | created_at | timestamptz | default `now()` |
 | updated_at | timestamptz | default `now()` |
 
-**Enum** `generation_status` values: `queued`, `running`, `succeeded`, `failed`.
+**Enum** `generation_status` values: `succeeded`, `failed`.
 
 ### 1.5 `user_preferences`
 | Column | Type | Constraints |
@@ -76,7 +76,7 @@ This table is managed by Supabase Auth.
 | created_at | timestamptz | default `now()` |
 | updated_at | timestamptz | default `now()` |
 
-**Enum** `preference_category` values: `food`, `culture`, `adventure`, `other` (extendable).
+**Enum** `preference_category` values: `food`, `culture`, `adventure`, `nature`, `other` (extendable).
 
 *Trigger*
 - Automatically update the updated_at column on record updates.
