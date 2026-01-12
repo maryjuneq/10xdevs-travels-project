@@ -12,7 +12,7 @@ FR-002  Create, read, update, delete (CRUD) trip notes capturing destination, ap
 FR-003  Store and edit user travel preferences in a private profile
 FR-004  Trigger AI generation of a day-level itinerary from a selected note based on stored user preferences
 FR-005  Display progress feedback during AI generation (≤ 1 min SLA)
-FR-006  Persist generated itinerary linked to its original note; allow user edits; allow regeneration
+FR-006  Persist generated itinerary linked to its original note; allow user edits (deferred); allow regeneration
 FR-007  Handle generation failures by displaying error and enabling retry; if a previously generated plan exists, show that plan
 FR-008  Allow users to delete their account, cascading removal of notes, plans, and preferences
 
@@ -36,7 +36,7 @@ PB-006  No in-app user feedback collection beyond manual plan edits
 | US-007 | Manage preferences | As a user, I want to add or edit at least one travel preference to personalize plan generation. | 1) Preference form submits successfully. 2) DB records at least one preference per user to count toward KPI. |
 | US-008 | Generate itinerary | As a user, I want to generate a travel plan from a note so that I receive a day-level itinerary. | 1) User clicks "Generate Plan". 2) Progress text displays. 3) Plan is returned within 60 s and stored. 4) Itinerary shows day-level outline. |
 | US-009 | Handle generation failure | As a user, I want to retry plan generation if it fails so that I can still obtain an itinerary. | 1) On failure, user returns to note page. 2) If prior plan exists, it is displayed. 3) Retry button triggers another request. |
-| US-010 | View & edit itinerary | As a user, I want to view the generated itinerary and make manual edits. | 1) Itinerary page loads from DB. 2) User can update text fields. 3) Changes are saved. |
+| US-010 | View & edit itinerary | As a user, I want to view the generated itinerary and make manual edits. | 1) Itinerary page loads from DB. 2) User can update text fields. 3) Changes are saved. | (deferred)
 | US-011 | Account deletion | As a user, I want to delete my account and all data. | 1) Deletion requires confirmation. 2) Notes, plans, preferences, and auth record are removed. 3) User session ends. |
 | US-013 | Secure session handling | As the system, I need to ensure that only authenticated users can access their own notes, plans, and preferences. | 1) All protected routes check for valid session. 2) Unauthorized access redirects to login. 3) Users cannot access another user's resources. |
 

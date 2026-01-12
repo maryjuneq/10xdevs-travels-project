@@ -75,6 +75,21 @@ export type TripNoteDTO = {
 };
 
 /**
+ * Lightweight DTO for Trip Note list items
+ * Used in GET /api/trip-notes for paginated list view
+ * Includes hasItinerary flag to indicate if an itinerary exists
+ */
+export type TripNoteListItemDTO = {
+  id: number;
+  destination: string;
+  earliestStartDate: string;
+  approximateTripLength: number;
+  createdAt: string;
+  updatedAt: string;
+  hasItinerary: boolean;
+};
+
+/**
  * Command for creating a new trip note
  * Used in POST /api/trip-notes
  * Derived from TablesInsert but with camelCase field names
@@ -96,6 +111,22 @@ export type CreateTripNoteCommand = {
  * All fields from CreateTripNoteCommand with same structure
  */
 export type UpdateTripNoteCommand = CreateTripNoteCommand;
+
+/**
+ * Lightweight DTO for Itinerary in detail view
+ * Used in GET /api/trip-notes/{id}
+ * Excludes timestamps and redundant tripNoteId for efficiency
+ */
+export type LightItineraryDTO = Pick<ItineraryDTO, 'id' | 'suggestedTripLength' | 'itinerary'>;
+
+/**
+ * DTO for Trip Note with embedded itinerary
+ * Used in GET /api/trip-notes/{id}
+ * Combines TripNoteDTO with optional lightweight itinerary
+ */
+export type TripNoteWithItineraryDTO = TripNoteDTO & {
+  itinerary: LightItineraryDTO | null;
+};
 
 // ============================================================================
 // Itineraries - DTOs and Commands
@@ -199,8 +230,9 @@ export type TripNotesListQuery = {
   pageSize?: number;
   destination?: string;
   startFrom?: string;
-  startTo?: string;
+
   sort?: 'destination' | 'earliest_start_date' | 'created_at' | '-destination' | '-earliest_start_date' | '-created_at';
+  hasItinerary?: boolean;
 };
 
 /**

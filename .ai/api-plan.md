@@ -18,11 +18,12 @@
 ### 2.2 Trip Notes
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/api/trip-notes` | List notes for authenticated user. Supports pagination, filtering & sorting. |
+| `GET` | `/api/trip-notes` | List notes for authenticated user. Returns simplified objects (`id`, `destination`, `earliestStartDate`, `approximateTripLength`, `createdAt`, `updatedAt`, `hasItinerary`) and supports pagination, filtering & sorting. |
 | `POST` | `/api/trip-notes` | Create a new trip note. |
-| `GET` | `/api/trip-notes/{id}` | Fetch a single note. |
+| `GET` | `/api/trip-notes/{id}` | Fetch a single note. Includes `itinerary` object if one exists. |
 | `PUT` | `/api/trip-notes/{id}` | Replace a note in full. |
 | `DELETE` | `/api/trip-notes/{id}` | Delete a note (cascades itinerary & jobs). |
+| `POST` | `/api/trip-notes/generateItenerary` | Note has to exist in database. Based on passed trip note data(in request body), and queried user preferences, calls the AI service for itenerary and awaits the response. On success: stores itinerary, creates a *succeeded* job record, and returns the itinerary payload (see 2.3). On failure: stores a *failed* job record and returns an error with details. |
 
 **Query Parameters (List)**
 - `page` ≧ 1 (default 1)
@@ -30,6 +31,22 @@
 - `destination` → case-insensitive substring filter
 - `startFrom`, `startTo` → filter by `earliest_start_date`
 - `sort` → `destination|earliest_start_date|created_at` (prefix `-` for desc)
+- `filter` by `hasItenerary`
+
+**Response Payload (list)**
+```json
+[
+  {
+    "id": 42,
+    "destination": "Tokyo, Japan",
+    "earliestStartDate": "2026-03-10",
+    "approximateTripLength": 7,
+    "createdAt": "2026-01-06T10:43:17Z",
+    "updatedAt": "2026-01-06T10:43:17Z",
+    "hasItinerary": true
+  }
+]
+```
 
 **Request Payload (`POST` / `PUT`)**
 ```json
@@ -58,7 +75,12 @@
   "currency": "USD",
   "details": "Cherry blossom season!",
   "createdAt": "2026-01-06T10:43:17Z",
-  "updatedAt": "2026-01-06T10:43:17Z"
+  "updatedAt": "2026-01-06T10:43:17Z",
+  "itinerary": {
+    "id": 17,
+    "suggestedTripLength": 7,
+    "itinerary": "Day 1: …",
+  }
 }
 ```
 
@@ -70,7 +92,7 @@
 
 ---
 
-### 2.3 Itineraries
+### 2.3 Itineraries (deferred - handled by other endpoints)
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/api/trip-notes/{id}/itinerary` | Retrieve itinerary for a note. Returns `404` if none exists. |
@@ -97,11 +119,10 @@
 
 ---
 
-### 2.4 Generation
+### 2.4 Generation jobs
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/api/trip-notes/{id}/generate` | Synchronously calls the AI service. On success: stores itinerary, creates a *succeeded* job record, and returns the itinerary payload (see 2.3). On failure: stores a *failed* job record and returns an error with details. |
 | `GET` | `/api/jobs` | (Admin only) List generation job records for analytics; supports pagination, filtering by `status`, and date range. |
 
 **Job Record Example**
@@ -171,7 +192,7 @@ Additional security layers:
 | Feature (PRD) | Endpoint(s) | Logic |
 |---------------|-------------|-------|
 | FR-002 CRUD Trip Notes | `/api/trip-notes*` | Standard CRUD with RLS & validation. |
-| FR-004 Generate Itinerary | `POST /api/trip-notes/{id}/generateItenerary` | 1) Validate note 2)get preferences (if any). 3) Call AI service asynchronously and await comletion. 4) On success: store itinerary and add `ai_generation_job` with `succeeded` status + duration. 5) On failure: add `ai_generation_job` with `failed` status and error text. |
+| FR-004 Generate Itinerary | `POST /api/trip-notes/generateItenerary` |  1.) Validate note exists in database. 2) Get preferences (if any) from database. 3) Call AI service asynchronously with list of preferences and a trip note object and await response. 4) On success: store itinerary and add `ai_generation_job` with `succeeded` status + duration. 5) On failure: add `ai_generation_job` with `failed` status and error text. |
 | FR-006 Persist Plan | Occurs within the generation endpoint (step 3 above). |
 | FR-007 Retry on Failure | If job status `failed`, frontend displays `errorText` & allows re-POST generate. |
 | FR-008 Delete Account | `DELETE /api/auth/account` | 1) Call Supabase `auth.admin.deleteUser`. 2) Cascade deletes via FK `ON DELETE CASCADE`. |

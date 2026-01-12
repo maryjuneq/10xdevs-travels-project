@@ -6,17 +6,10 @@
 import { z } from 'zod';
 
 /**
- * Schema for validating CreateTripNoteCommand
- * Enforces all business rules:
- * - destination: max 255 chars
- * - dates: ISO-8601 format, latestStartDate >= earliestStartDate
- * - groupSize: positive integer
- * - approximateTripLength: positive integer
- * - budgetAmount: positive integer (optional)
- * - currency: 3-letter ISO-4217 code (optional)
- * - details: free text (optional)
+ * Base object schema for trip note fields (without date validation refinement)
+ * Exported for reuse in other schemas that need to extend it
  */
-export const CreateTripNoteSchema = z.object({
+export const BaseTripNoteSchema = z.object({
   destination: z.string()
     .min(1, 'Destination is required')
     .max(255, 'Destination must not exceed 255 characters'),
@@ -50,7 +43,20 @@ export const CreateTripNoteSchema = z.object({
   details: z.string()
     .nullable()
     .optional(),
-}).refine(
+});
+
+/**
+ * Schema for validating CreateTripNoteCommand
+ * Enforces all business rules:
+ * - destination: max 255 chars
+ * - dates: ISO-8601 format, latestStartDate >= earliestStartDate
+ * - groupSize: positive integer
+ * - approximateTripLength: positive integer
+ * - budgetAmount: positive integer (optional)
+ * - currency: 3-letter ISO-4217 code (optional)
+ * - details: free text (optional)
+ */
+export const CreateTripNoteSchema = BaseTripNoteSchema.refine(
   (data) => {
     // Validate that latestStartDate >= earliestStartDate
     const earliest = new Date(data.earliestStartDate);
