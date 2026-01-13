@@ -1,23 +1,23 @@
 /**
  * API Route: /api/trip-notes/{id}
- * 
+ *
  * GET: Fetches a single trip note with its itinerary (if exists) for the authenticated user
  * DELETE: Deletes a trip note (and cascades to related itineraries and jobs)
- * 
+ *
  * Authentication: Requires valid Supabase session (temporary fallback to DEFAULT_USER_ID)
  * Authorization: Only allows operations on trip notes owned by the authenticated user
  */
 
-import type { APIRoute } from 'astro';
-import { TripNoteIdParamSchema } from '../../../lib/schemas/tripNoteIdParam.schema';
-import { TripNotesService } from '../../../lib/services/tripNotes.service';
-import { DEFAULT_USER_ID } from '../../../db/supabase.client';
-import { NotFoundError, ForbiddenError, InternalServerError } from '../../../lib/errors';
-import { createErrorResponse, createJsonResponse, createNoContentResponse } from '../../../lib/httpHelpers';
+import type { APIRoute } from "astro";
+import { TripNoteIdParamSchema } from "../../../lib/schemas/tripNoteIdParam.schema";
+import { TripNotesService } from "../../../lib/services/tripNotes.service";
+import { DEFAULT_USER_ID } from "../../../db/supabase.client";
+import { NotFoundError, ForbiddenError, InternalServerError } from "../../../lib/errors";
+import { createErrorResponse, createJsonResponse, createNoContentResponse } from "../../../lib/httpHelpers";
 
 /**
  * GET handler for fetching a single trip note with itinerary
- * 
+ *
  * Returns 200 with TripNoteWithItineraryDTO on success
  * Returns 400 if id parameter is invalid
  * Returns 401 if user is not authenticated
@@ -34,7 +34,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
 
     // Check for authentication
     if (!userId) {
-      return createErrorResponse(401, 'Unauthorized');
+      return createErrorResponse(401, "Unauthorized");
     }
 
     // Validate path parameter with Zod
@@ -42,46 +42,37 @@ export const GET: APIRoute = async ({ params, locals }) => {
 
     if (!validationResult.success) {
       const errors = validationResult.error.flatten();
-      return createErrorResponse(
-        400,
-        'Invalid id parameter',
-        errors.fieldErrors
-      );
+      return createErrorResponse(400, "Invalid id parameter", errors.fieldErrors);
     }
 
     const { id } = validationResult.data;
 
     // Fetch trip note with itinerary via service layer
-    const tripNote = await TripNotesService.getOneWithItinerary(
-      userId,
-      id,
-      supabase
-    );
+    const tripNote = await TripNotesService.getOneWithItinerary(userId, id, supabase);
 
     // Return 404 if trip note not found or doesn't belong to user
     if (!tripNote) {
-      return createErrorResponse(404, 'Trip note not found');
+      return createErrorResponse(404, "Trip note not found");
     }
 
     // Return trip note with itinerary
     return createJsonResponse(tripNote);
-
   } catch (error: any) {
     // Log error for debugging
-    console.error('Error in GET /api/trip-notes/{id}:', error);
+    console.error("Error in GET /api/trip-notes/{id}:", error);
 
     // Return 500 for unexpected errors
-    return createErrorResponse(500, 'Internal server error');
+    return createErrorResponse(500, "Internal server error");
   }
 };
 
 /**
  * DELETE handler for deleting a trip note
- * 
+ *
  * Deletes the specified trip note and all related records via CASCADE:
  * - itineraries (1-to-1 relationship)
  * - ai_generation_jobs (1-to-N relationship)
- * 
+ *
  * Returns 204 No Content on success
  * Returns 400 if id parameter is invalid
  * Returns 401 if user is not authenticated
@@ -99,7 +90,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
 
     // Check for authentication
     if (!userId) {
-      return createErrorResponse(401, 'Unauthorized');
+      return createErrorResponse(401, "Unauthorized");
     }
 
     // Validate path parameter with Zod
@@ -107,11 +98,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
 
     if (!validationResult.success) {
       const errors = validationResult.error.flatten();
-      return createErrorResponse(
-        400,
-        'Invalid id parameter',
-        errors.fieldErrors
-      );
+      return createErrorResponse(400, "Invalid id parameter", errors.fieldErrors);
     }
 
     const { id } = validationResult.data;
@@ -122,10 +109,9 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
 
     // Return 204 No Content on successful deletion
     return createNoContentResponse();
-
   } catch (error: any) {
     // Log error for debugging
-    console.error('Error in DELETE /api/trip-notes/{id}:', error);
+    console.error("Error in DELETE /api/trip-notes/{id}:", error);
 
     // Map service errors to HTTP responses
     if (error instanceof ForbiddenError) {
@@ -141,10 +127,9 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     }
 
     // Return 500 for truly unexpected errors
-    return createErrorResponse(500, 'Internal server error');
+    return createErrorResponse(500, "Internal server error");
   }
 };
 
 // Disable prerendering for API routes
 export const prerender = false;
-

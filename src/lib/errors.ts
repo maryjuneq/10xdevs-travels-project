@@ -21,7 +21,7 @@ export class AppError extends Error {
  * Thrown when request data fails validation
  */
 export class ValidationError extends AppError {
-  constructor(message: string = 'Validation failed') {
+  constructor(message = "Validation failed") {
     super(message);
   }
 }
@@ -31,7 +31,7 @@ export class ValidationError extends AppError {
  * Thrown when user is not authenticated
  */
 export class UnauthorizedError extends AppError {
-  constructor(message: string = 'Unauthorized') {
+  constructor(message = "Unauthorized") {
     super(message);
   }
 }
@@ -41,7 +41,7 @@ export class UnauthorizedError extends AppError {
  * Thrown when user is authenticated but lacks permission
  */
 export class ForbiddenError extends AppError {
-  constructor(message: string = 'Forbidden') {
+  constructor(message = "Forbidden") {
     super(message);
   }
 }
@@ -51,7 +51,7 @@ export class ForbiddenError extends AppError {
  * Thrown when requested resource doesn't exist
  */
 export class NotFoundError extends AppError {
-  constructor(message: string = 'Not found') {
+  constructor(message = "Not found") {
     super(message);
   }
 }
@@ -61,7 +61,7 @@ export class NotFoundError extends AppError {
  * Thrown when request conflicts with current state
  */
 export class ConflictError extends AppError {
-  constructor(message: string = 'Conflict') {
+  constructor(message = "Conflict") {
     super(message);
   }
 }
@@ -71,8 +71,7 @@ export class ConflictError extends AppError {
  * Thrown for unexpected server errors
  */
 export class InternalServerError extends AppError {
-  constructor(message: string = 'Internal server error') {
+  constructor(message = "Internal server error") {
     super(message);
   }
 }
-

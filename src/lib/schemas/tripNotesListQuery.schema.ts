@@ -3,7 +3,7 @@
  * Validates and coerces query parameters from GET /api/trip-notes
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * Schema for validating query parameters for listing trip notes
@@ -20,11 +20,7 @@ export const TripNotesListQuerySchema = z.object({
     .string()
     .optional()
     .transform((val) => (val ? parseInt(val, 10) : 1))
-    .pipe(
-      z.number()
-        .int('page must be an integer')
-        .min(1, 'page must be at least 1')
-    ),
+    .pipe(z.number().int("page must be an integer").min(1, "page must be at least 1")),
 
   // Page size
   pageSize: z
@@ -32,10 +28,11 @@ export const TripNotesListQuerySchema = z.object({
     .optional()
     .transform((val) => (val ? parseInt(val, 10) : 20))
     .pipe(
-      z.number()
-        .int('pageSize must be an integer')
-        .min(1, 'pageSize must be at least 1')
-        .max(100, 'pageSize must not exceed 100')
+      z
+        .number()
+        .int("pageSize must be an integer")
+        .min(1, "pageSize must be at least 1")
+        .max(100, "pageSize must not exceed 100")
     ),
 
   // Destination filter (case-insensitive contains)
@@ -47,29 +44,22 @@ export const TripNotesListQuerySchema = z.object({
   // Date range filters (ISO-8601 dates)
   startFrom: z
     .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'startFrom must be in ISO-8601 format (YYYY-MM-DD)')
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "startFrom must be in ISO-8601 format (YYYY-MM-DD)")
     .optional(),
 
   // Sort column and direction
   sort: z
-    .enum([
-      'destination',
-      'earliest_start_date',
-      'created_at',
-      '-destination',
-      '-earliest_start_date',
-      '-created_at',
-    ])
+    .enum(["destination", "earliest_start_date", "created_at", "-destination", "-earliest_start_date", "-created_at"])
     .optional()
-    .default('-created_at'),
+    .default("-created_at"),
 
   // Filter by itinerary existence
   hasItinerary: z
     .string()
     .optional()
     .transform((val) => {
-      if (val === undefined || val === '') return undefined;
-      return val === 'true';
+      if (val === undefined || val === "") return undefined;
+      return val === "true";
     })
     .pipe(z.boolean().optional()),
 });
@@ -78,4 +68,3 @@ export const TripNotesListQuerySchema = z.object({
  * Type inference from the schema
  */
 export type TripNotesListQueryInput = z.infer<typeof TripNotesListQuerySchema>;
-

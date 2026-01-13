@@ -4,14 +4,10 @@
  * Handles logging of successful and failed AI generation attempts
  */
 
-import type { SupabaseClient } from '../../db/supabase.client';
-import type { TablesInsert } from '../../db/database.types';
-import type {
-  GenerationJobEntity,
-  GenerationJobDTO,
-  GenerationStatus,
-} from '../../types';
-import { InternalServerError } from '../errors';
+import type { SupabaseClient } from "../../db/supabase.client";
+import type { TablesInsert } from "../../db/database.types";
+import type { GenerationJobEntity, GenerationJobDTO, GenerationStatus } from "../../types";
+import { InternalServerError } from "../errors";
 
 /**
  * Transforms a GenerationJobEntity (snake_case) to GenerationJobDTO (camelCase)
@@ -36,7 +32,7 @@ function entityToDTO(entity: GenerationJobEntity): GenerationJobDTO {
 export class JobsService {
   /**
    * Logs a successful AI generation job
-   * 
+   *
    * @param tripNoteId - ID of the trip note
    * @param durationMs - Duration of the AI generation in milliseconds
    * @param userId - Authenticated user ID
@@ -50,27 +46,23 @@ export class JobsService {
     userId: string,
     supabase: SupabaseClient
   ): Promise<GenerationJobDTO> {
-    const insertData: TablesInsert<'ai_generation_jobs'> = {
+    const insertData: TablesInsert<"ai_generation_jobs"> = {
       trip_note_id: tripNoteId,
-      status: 'succeeded' as GenerationStatus,
+      status: "succeeded" as GenerationStatus,
       duration_ms: durationMs,
       error_text: null,
       user_id: userId,
     };
 
-    const { data, error } = await supabase
-      .from('ai_generation_jobs')
-      .insert(insertData)
-      .select()
-      .single();
+    const { data, error } = await supabase.from("ai_generation_jobs").insert(insertData).select().single();
 
     if (error) {
-      console.error('Database error logging successful job:', error);
-      throw new InternalServerError('Failed to log successful generation job');
+      console.error("Database error logging successful job:", error);
+      throw new InternalServerError("Failed to log successful generation job");
     }
 
     if (!data) {
-      throw new InternalServerError('No data returned from database after job insert');
+      throw new InternalServerError("No data returned from database after job insert");
     }
 
     return entityToDTO(data);
@@ -78,7 +70,7 @@ export class JobsService {
 
   /**
    * Logs a failed AI generation job
-   * 
+   *
    * @param tripNoteId - ID of the trip note
    * @param errorText - Error message describing the failure
    * @param userId - Authenticated user ID
@@ -94,27 +86,23 @@ export class JobsService {
     supabase: SupabaseClient,
     durationMs?: number | null
   ): Promise<GenerationJobDTO> {
-    const insertData: TablesInsert<'ai_generation_jobs'> = {
+    const insertData: TablesInsert<"ai_generation_jobs"> = {
       trip_note_id: tripNoteId,
-      status: 'failed' as GenerationStatus,
+      status: "failed" as GenerationStatus,
       duration_ms: durationMs ?? null,
       error_text: errorText,
       user_id: userId,
     };
 
-    const { data, error } = await supabase
-      .from('ai_generation_jobs')
-      .insert(insertData)
-      .select()
-      .single();
+    const { data, error } = await supabase.from("ai_generation_jobs").insert(insertData).select().single();
 
     if (error) {
-      console.error('Database error logging failed job:', error);
-      throw new InternalServerError('Failed to log failed generation job');
+      console.error("Database error logging failed job:", error);
+      throw new InternalServerError("Failed to log failed generation job");
     }
 
     if (!data) {
-      throw new InternalServerError('No data returned from database after job insert');
+      throw new InternalServerError("No data returned from database after job insert");
     }
 
     return entityToDTO(data);
@@ -123,25 +111,22 @@ export class JobsService {
   /**
    * Lists all generation jobs for a specific trip note
    * Useful for viewing generation history
-   * 
+   *
    * @param tripNoteId - ID of the trip note
    * @param supabase - Supabase client instance
    * @returns Promise<GenerationJobDTO[]> - Array of job records in DTO format
    * @throws InternalServerError if database operation fails
    */
-  static async listByTripNote(
-    tripNoteId: number,
-    supabase: SupabaseClient
-  ): Promise<GenerationJobDTO[]> {
+  static async listByTripNote(tripNoteId: number, supabase: SupabaseClient): Promise<GenerationJobDTO[]> {
     const { data, error } = await supabase
-      .from('ai_generation_jobs')
-      .select('*')
-      .eq('trip_note_id', tripNoteId)
-      .order('created_at', { ascending: false });
+      .from("ai_generation_jobs")
+      .select("*")
+      .eq("trip_note_id", tripNoteId)
+      .order("created_at", { ascending: false });
 
     if (error) {
-      console.error('Database error listing jobs:', error);
-      throw new InternalServerError('Failed to list generation jobs');
+      console.error("Database error listing jobs:", error);
+      throw new InternalServerError("Failed to list generation jobs");
     }
 
     if (!data || data.length === 0) {
@@ -151,4 +136,3 @@ export class JobsService {
     return data.map(entityToDTO);
   }
 }
-

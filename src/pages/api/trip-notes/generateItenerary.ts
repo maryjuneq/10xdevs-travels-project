@@ -1,11 +1,11 @@
 /**
  * POST /api/trip-notes/generateItenerary
  * Generates a travel itinerary for an existing trip note
- * 
+ *
  * Authentication: Requires valid Supabase session (using DEFAULT_USER_ID for dev)
  * Request Body: GenerateItineraryInput (CreateTripNoteCommand + id)
  * Response: 201 Created with ItineraryDTO
- * 
+ *
  * Flow:
  * 1. Validate request body (Zod schema)
  * 2. Load trip note and verify ownership
@@ -16,16 +16,16 @@
  * 7. Return created itinerary
  */
 
-import type { APIRoute } from 'astro';
-import { GenerateItinerarySchema } from '../../../lib/schemas/generateItinerary.schema';
-import { TripNotesService } from '../../../lib/services/tripNotes.service';
-import { PreferencesService } from '../../../lib/services/preferences.service';
-import { AIService } from '../../../lib/services/ai.service';
-import { ItinerariesService } from '../../../lib/services/itineraries.service';
-import { JobsService } from '../../../lib/services/jobs.service';
-import { DEFAULT_USER_ID } from '../../../db/supabase.client';
-import { NotFoundError, ValidationError } from '../../../lib/errors';
-import { createErrorResponse, createJsonResponse } from '../../../lib/httpHelpers';
+import type { APIRoute } from "astro";
+import { GenerateItinerarySchema } from "../../../lib/schemas/generateItinerary.schema";
+import { TripNotesService } from "../../../lib/services/tripNotes.service";
+import { PreferencesService } from "../../../lib/services/preferences.service";
+import { AIService } from "../../../lib/services/ai.service";
+import { ItinerariesService } from "../../../lib/services/itineraries.service";
+import { JobsService } from "../../../lib/services/jobs.service";
+import { DEFAULT_USER_ID } from "../../../db/supabase.client";
+import { NotFoundError, ValidationError } from "../../../lib/errors";
+import { createErrorResponse, createJsonResponse } from "../../../lib/httpHelpers";
 
 /**
  * POST handler for generating itineraries
@@ -43,7 +43,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Authentication check
     if (!userId) {
-      return createErrorResponse(401, 'Unauthorized');
+      return createErrorResponse(401, "Unauthorized");
     }
 
     // Parse request body
@@ -51,7 +51,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     try {
       body = await request.json();
     } catch {
-      return createErrorResponse(400, 'Invalid JSON in request body');
+      return createErrorResponse(400, "Invalid JSON in request body");
     }
 
     // Validate request body with Zod
@@ -59,7 +59,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     if (!validationResult.success) {
       const errors = validationResult.error.flatten();
-      return createErrorResponse(400, 'Validation failed', errors.fieldErrors);
+      return createErrorResponse(400, "Validation failed", errors.fieldErrors);
     }
 
     const { id, ...tripNoteFields } = validationResult.data;
@@ -72,7 +72,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       TripNotesService.assertBelongsToUser(tripNote, userId);
     } catch (error: any) {
       if (error instanceof NotFoundError) {
-        return createErrorResponse(404, 'Trip note not found or access denied');
+        return createErrorResponse(404, "Trip note not found or access denied");
       }
       throw error;
     }
@@ -80,16 +80,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Update trip note if any fields have changed
     let updatedTripNote;
     try {
-      updatedTripNote = await TripNotesService.updateIfChanged(
-        id,
-        tripNoteFields,
-        userId,
-        supabase
-      );
+      updatedTripNote = await TripNotesService.updateIfChanged(id, tripNoteFields, userId, supabase);
     } catch (error: any) {
       if (error instanceof ValidationError) {
-        return createErrorResponse(400, 'Validation failed', {
-          destination: [error.message]
+        return createErrorResponse(400, "Validation failed", {
+          destination: [error.message],
         });
       }
       throw error;
@@ -100,7 +95,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     try {
       preferences = await PreferencesService.listByUser(userId, supabase);
     } catch (error) {
-      console.error('Error fetching user preferences:', error);
+      console.error("Error fetching user preferences:", error);
       // Log failed job - preferences fetch error
       const durationMs = Math.round(performance.now() - startTime);
       await JobsService.logFailed(
@@ -111,7 +106,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         durationMs
       );
 
-      return createErrorResponse(500, 'Failed to fetch user preferences');
+      return createErrorResponse(500, "Failed to fetch user preferences");
     }
 
     // Generate itinerary via AI service
@@ -120,7 +115,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       const tripNoteDTO = TripNotesService.toPromptDTO(updatedTripNote);
       aiResult = await AIService.generateItinerary(tripNoteDTO, preferences);
     } catch (error: any) {
-      console.error('AI generation error:', error);
+      console.error("AI generation error:", error);
       // Log failed job - AI generation error
       const durationMs = Math.round(performance.now() - startTime);
       await JobsService.logFailed(
@@ -131,7 +126,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         durationMs
       );
 
-      return createErrorResponse(500, 'Failed to generate itinerary');
+      return createErrorResponse(500, "Failed to generate itinerary");
     }
 
     // Persist itinerary to database
@@ -145,7 +140,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         aiResult.suggestedTripLength
       );
     } catch (error: any) {
-      console.error('Error persisting itinerary:', error);
+      console.error("Error persisting itinerary:", error);
       // Log failed job - database insert error
       await JobsService.logFailed(
         tripNoteId,
@@ -155,29 +150,23 @@ export const POST: APIRoute = async ({ request, locals }) => {
         aiResult.durationMs
       );
 
-      return createErrorResponse(500, 'Failed to save itinerary');
+      return createErrorResponse(500, "Failed to save itinerary");
     }
 
     // Log successful job
     try {
-      await JobsService.logSucceeded(
-        tripNoteId,
-        aiResult.durationMs,
-        userId,
-        supabase
-      );
+      await JobsService.logSucceeded(tripNoteId, aiResult.durationMs, userId, supabase);
     } catch (error) {
       // Job logging failure shouldn't fail the request
       // The itinerary was created successfully
-      console.error('Warning: Failed to log successful job:', error);
+      console.error("Warning: Failed to log successful job:", error);
     }
 
     // Return created itinerary
     return createJsonResponse(itinerary, 201);
-
   } catch (error: any) {
     // Catch-all error handler for unexpected errors
-    console.error('Unexpected error in POST /api/trip-notes/generateItenerary:', error);
+    console.error("Unexpected error in POST /api/trip-notes/generateItenerary:", error);
 
     // Try to log failed job if we have tripNoteId
     if (tripNoteId) {
@@ -193,16 +182,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
           durationMs
         );
       } catch (logError) {
-        console.error('Failed to log error to jobs table:', logError);
+        console.error("Failed to log error to jobs table:", logError);
       }
     }
 
-    return createErrorResponse(500, 'An unexpected error occurred', {
-      message: error.message || 'Unknown error'
+    return createErrorResponse(500, "An unexpected error occurred", {
+      message: error.message || "Unknown error",
     });
   }
 };
 
 // Disable prerendering for API routes
 export const prerender = false;
-

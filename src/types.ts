@@ -1,15 +1,15 @@
 /**
  * Shared TypeScript types for backend and frontend
- * 
+ *
  * This file contains:
  * - Entity types (direct mappings to database tables)
  * - DTO types (Data Transfer Objects for API responses)
  * - Command Models (for API request payloads)
- * 
+ *
  * All types are derived from the database schema in ./db/database.types.ts
  */
 
-import type { Tables, TablesInsert, Enums } from './db/database.types';
+import type { Tables, TablesInsert, Enums } from "./db/database.types";
 
 // ============================================================================
 // Enums
@@ -19,13 +19,13 @@ import type { Tables, TablesInsert, Enums } from './db/database.types';
  * Status of an AI generation job
  * Directly mapped from database enum
  */
-export type GenerationStatus = Enums<'generation_status'>;
+export type GenerationStatus = Enums<"generation_status">;
 
 /**
  * Category of a user preference
  * Directly mapped from database enum
  */
-export type PreferenceCategory = Enums<'preference_category'>;
+export type PreferenceCategory = Enums<"preference_category">;
 
 // ============================================================================
 // Entity Types (Direct database table mappings)
@@ -34,22 +34,22 @@ export type PreferenceCategory = Enums<'preference_category'>;
 /**
  * Trip Note entity - represents a row from the trip_notes table
  */
-export type TripNoteEntity = Tables<'trip_notes'>;
+export type TripNoteEntity = Tables<"trip_notes">;
 
 /**
  * Itinerary entity - represents a row from the itineraries table
  */
-export type ItineraryEntity = Tables<'itineraries'>;
+export type ItineraryEntity = Tables<"itineraries">;
 
 /**
  * AI Generation Job entity - represents a row from the ai_generation_jobs table
  */
-export type GenerationJobEntity = Tables<'ai_generation_jobs'>;
+export type GenerationJobEntity = Tables<"ai_generation_jobs">;
 
 /**
  * User Preference entity - represents a row from the user_preferences table
  */
-export type UserPreferenceEntity = Tables<'user_preferences'>;
+export type UserPreferenceEntity = Tables<"user_preferences">;
 
 // ============================================================================
 // Trip Notes - DTOs and Commands
@@ -60,7 +60,7 @@ export type UserPreferenceEntity = Tables<'user_preferences'>;
  * Converts snake_case database fields to camelCase for API consistency
  * Excludes user_id for security (inferred from session)
  */
-export type TripNoteDTO = {
+export interface TripNoteDTO {
   id: number;
   destination: string;
   earliestStartDate: string;
@@ -72,14 +72,14 @@ export type TripNoteDTO = {
   details: string | null;
   createdAt: string;
   updatedAt: string;
-};
+}
 
 /**
  * Lightweight DTO for Trip Note list items
  * Used in GET /api/trip-notes for paginated list view
  * Includes hasItinerary flag to indicate if an itinerary exists
  */
-export type TripNoteListItemDTO = {
+export interface TripNoteListItemDTO {
   id: number;
   destination: string;
   earliestStartDate: string;
@@ -87,14 +87,14 @@ export type TripNoteListItemDTO = {
   createdAt: string;
   updatedAt: string;
   hasItinerary: boolean;
-};
+}
 
 /**
  * Command for creating a new trip note
  * Used in POST /api/trip-notes
  * Derived from TablesInsert but with camelCase field names
  */
-export type CreateTripNoteCommand = {
+export interface CreateTripNoteCommand {
   destination: string;
   earliestStartDate: string;
   latestStartDate: string;
@@ -103,7 +103,7 @@ export type CreateTripNoteCommand = {
   budgetAmount?: number | null;
   currency?: string | null;
   details?: string | null;
-};
+}
 
 /**
  * Command for updating an existing trip note
@@ -117,7 +117,7 @@ export type UpdateTripNoteCommand = CreateTripNoteCommand;
  * Used in GET /api/trip-notes/{id}
  * Excludes timestamps and redundant tripNoteId for efficiency
  */
-export type LightItineraryDTO = Pick<ItineraryDTO, 'id' | 'suggestedTripLength' | 'itinerary'>;
+export type LightItineraryDTO = Pick<ItineraryDTO, "id" | "suggestedTripLength" | "itinerary">;
 
 /**
  * DTO for Trip Note with embedded itinerary
@@ -137,23 +137,23 @@ export type TripNoteWithItineraryDTO = TripNoteDTO & {
  * Converts snake_case database fields to camelCase
  * Excludes user_id for security
  */
-export type ItineraryDTO = {
+export interface ItineraryDTO {
   id: number;
   tripNoteId: number;
   suggestedTripLength: number | null;
   itinerary: string;
   createdAt: string;
   updatedAt: string;
-};
+}
 
 /**
  * Command for updating an itinerary
  * Used in PUT /api/trip-notes/{id}/itinerary
  * Allows manual editing of the itinerary text
  */
-export type UpdateItineraryCommand = {
+export interface UpdateItineraryCommand {
   itinerary: string;
-};
+}
 
 // ============================================================================
 // AI Generation Jobs - DTOs
@@ -164,7 +164,7 @@ export type UpdateItineraryCommand = {
  * Used for admin analytics endpoint GET /api/jobs
  * Converts snake_case to camelCase, excludes user_id
  */
-export type GenerationJobDTO = {
+export interface GenerationJobDTO {
   id: number;
   tripNoteId: number;
   status: GenerationStatus;
@@ -172,7 +172,7 @@ export type GenerationJobDTO = {
   errorText: string | null;
   createdAt: string;
   updatedAt: string;
-};
+}
 
 // ============================================================================
 // User Preferences - DTOs and Commands
@@ -182,22 +182,22 @@ export type GenerationJobDTO = {
  * DTO for User Preference responses
  * Converts snake_case to camelCase, excludes user_id
  */
-export type UserPreferenceDTO = {
+export interface UserPreferenceDTO {
   id: number;
   category: PreferenceCategory;
   preferenceText: string;
   createdAt: string;
   updatedAt: string;
-};
+}
 
 /**
  * Command for creating a new user preference
  * Used in POST /api/preferences
  */
-export type CreateUserPreferenceCommand = {
+export interface CreateUserPreferenceCommand {
   category?: PreferenceCategory;
   preferenceText: string;
-};
+}
 
 /**
  * Command for updating an existing user preference
@@ -213,40 +213,40 @@ export type UpdateUserPreferenceCommand = CreateUserPreferenceCommand;
  * Generic paginated response wrapper
  * Used for all list endpoints that support pagination
  */
-export type PaginatedResponse<T> = {
+export interface PaginatedResponse<T> {
   data: T[];
   page: number;
   pageSize: number;
   total: number;
   totalPages: number;
-};
+}
 
 /**
  * Query parameters for listing trip notes
  * Used in GET /api/trip-notes
  */
-export type TripNotesListQuery = {
+export interface TripNotesListQuery {
   page?: number;
   pageSize?: number;
   destination?: string;
   startFrom?: string;
 
-  sort?: 'destination' | 'earliest_start_date' | 'created_at' | '-destination' | '-earliest_start_date' | '-created_at';
+  sort?: "destination" | "earliest_start_date" | "created_at" | "-destination" | "-earliest_start_date" | "-created_at";
   hasItinerary?: boolean;
-};
+}
 
 /**
  * Query parameters for listing generation jobs (admin)
  * Used in GET /api/jobs
  */
-export type GenerationJobsListQuery = {
+export interface GenerationJobsListQuery {
   page?: number;
   pageSize?: number;
   durationMs: number | null;
   status?: GenerationStatus;
   createdFrom?: string;
   createdTo?: string;
-};
+}
 
 // ============================================================================
 // Helper Types for Type Transformations
@@ -256,12 +256,16 @@ export type GenerationJobsListQuery = {
  * Helper type to convert entity (snake_case) to DTO (camelCase)
  * This documents the transformation pattern used throughout the API
  */
-export type EntityToDTO<T extends TripNoteEntity | ItineraryEntity | GenerationJobEntity | UserPreferenceEntity> = 
-  T extends TripNoteEntity ? TripNoteDTO :
-  T extends ItineraryEntity ? ItineraryDTO :
-  T extends GenerationJobEntity ? GenerationJobDTO :
-  T extends UserPreferenceEntity ? UserPreferenceDTO :
-  never;
+export type EntityToDTO<T extends TripNoteEntity | ItineraryEntity | GenerationJobEntity | UserPreferenceEntity> =
+  T extends TripNoteEntity
+    ? TripNoteDTO
+    : T extends ItineraryEntity
+      ? ItineraryDTO
+      : T extends GenerationJobEntity
+        ? GenerationJobDTO
+        : T extends UserPreferenceEntity
+          ? UserPreferenceDTO
+          : never;
 
 // ============================================================================
 // Utility Functions Type Signatures
@@ -277,7 +281,7 @@ export type TripNoteEntityToDTO = (entity: TripNoteEntity) => TripNoteDTO;
  * Type for a function that converts a CreateTripNoteCommand to TablesInsert<'trip_notes'>
  * Useful for ensuring consistent transformation logic
  */
-export type TripNoteCommandToInsert = (command: CreateTripNoteCommand, userId: string) => TablesInsert<'trip_notes'>;
+export type TripNoteCommandToInsert = (command: CreateTripNoteCommand, userId: string) => TablesInsert<"trip_notes">;
 
 /**
  * Type for a function that converts an ItineraryEntity to ItineraryDTO
@@ -297,5 +301,7 @@ export type UserPreferenceEntityToDTO = (entity: UserPreferenceEntity) => UserPr
 /**
  * Type for a function that converts a CreateUserPreferenceCommand to TablesInsert<'user_preferences'>
  */
-export type UserPreferenceCommandToInsert = (command: CreateUserPreferenceCommand, userId: string) => TablesInsert<'user_preferences'>;
-
+export type UserPreferenceCommandToInsert = (
+  command: CreateUserPreferenceCommand,
+  userId: string
+) => TablesInsert<"user_preferences">;
