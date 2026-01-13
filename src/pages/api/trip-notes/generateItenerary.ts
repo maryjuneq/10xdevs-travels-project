@@ -24,6 +24,8 @@ import { AIService } from '../../../lib/services/ai.service';
 import { ItinerariesService } from '../../../lib/services/itineraries.service';
 import { JobsService } from '../../../lib/services/jobs.service';
 import { DEFAULT_USER_ID } from '../../../db/supabase.client';
+import { NotFoundError, ValidationError } from '../../../lib/errors';
+import { createErrorResponse, createJsonResponse } from '../../../lib/httpHelpers';
 
 /**
  * POST handler for generating itineraries
@@ -41,13 +43,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Authentication check
     if (!userId) {
-      return new Response(
-        JSON.stringify({ error: 'unauthorized' }),
-        {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      return createErrorResponse(401, 'Unauthorized');
     }
 
     // Parse request body
@@ -55,13 +51,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     try {
       body = await request.json();
     } catch {
-      return new Response(
-        JSON.stringify({ error: 'Invalid JSON in request body' }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      return createErrorResponse(400, 'Invalid JSON in request body');
     }
 
     // Validate request body with Zod
@@ -69,16 +59,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     if (!validationResult.success) {
       const errors = validationResult.error.flatten();
-      return new Response(
-        JSON.stringify({
-          error: 'Validation failed',
-          details: errors.fieldErrors,
-        }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      return createErrorResponse(400, 'Validation failed', errors.fieldErrors);
     }
 
     const { id, ...tripNoteFields } = validationResult.data;
@@ -90,14 +71,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     try {
       TripNotesService.assertBelongsToUser(tripNote, userId);
     } catch (error: any) {
-      if (error.message === 'not_found') {
-        return new Response(
-          JSON.stringify({ error: 'Trip note not found or access denied' }),
-          {
-            status: 404,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
+      if (error instanceof NotFoundError) {
+        return createErrorResponse(404, 'Trip note not found or access denied');
       }
       throw error;
     }
@@ -112,19 +87,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
         supabase
       );
     } catch (error: any) {
-      if (error.message === 'destination_immutable') {
-        return new Response(
-          JSON.stringify({ 
-            error: 'Validation failed',
-            details: {
-              destination: ['Destination cannot be changed for existing trip notes']
-            }
-          }),
-          {
-            status: 400,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
+      if (error instanceof ValidationError) {
+        return createErrorResponse(400, 'Validation failed', {
+          destination: [error.message]
+        });
       }
       throw error;
     }
@@ -145,13 +111,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         durationMs
       );
 
-      return new Response(
-        JSON.stringify({ error: 'Failed to fetch user preferences' }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      return createErrorResponse(500, 'Failed to fetch user preferences');
     }
 
     // Generate itinerary via AI service
@@ -171,13 +131,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         durationMs
       );
 
-      return new Response(
-        JSON.stringify({ error: 'Failed to generate itinerary' }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      return createErrorResponse(500, 'Failed to generate itinerary');
     }
 
     // Persist itinerary to database
@@ -201,13 +155,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         aiResult.durationMs
       );
 
-      return new Response(
-        JSON.stringify({ error: 'Failed to save itinerary' }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      return createErrorResponse(500, 'Failed to save itinerary');
     }
 
     // Log successful job
@@ -225,13 +173,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // Return created itinerary
-    return new Response(
-      JSON.stringify(itinerary),
-      {
-        status: 201,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return createJsonResponse(itinerary, 201);
 
   } catch (error: any) {
     // Catch-all error handler for unexpected errors
@@ -255,16 +197,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
     }
 
-    return new Response(
-      JSON.stringify({ 
-        error: 'An unexpected error occurred',
-        message: error.message || 'Unknown error',
-      }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return createErrorResponse(500, 'An unexpected error occurred', {
+      message: error.message || 'Unknown error'
+    });
   }
 };
 

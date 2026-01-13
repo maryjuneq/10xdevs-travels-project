@@ -16,6 +16,7 @@ import type {
   TripNoteWithItineraryDTO,
   LightItineraryDTO,
 } from '../../types';
+import { NotFoundError, ForbiddenError, ValidationError, InternalServerError } from '../errors';
 
 /**
  * Transforms a CreateTripNoteCommand (camelCase) to database insert format (snake_case)
@@ -81,7 +82,7 @@ export class TripNotesService {
    * @param userId - Authenticated user ID from session
    * @param supabase - Supabase client instance
    * @returns Promise<TripNoteDTO> - The created trip note in DTO format
-   * @throws Error if database operation fails
+   * @throws InternalServerError if database operation fails
    */
   static async createTripNote(
     command: CreateTripNoteCommand,
@@ -101,11 +102,11 @@ export class TripNotesService {
     // Handle database errors
     if (error) {
       console.error('Database error creating trip note:', error);
-      throw error;
+      throw new InternalServerError('Failed to create trip note');
     }
 
     if (!data) {
-      throw new Error('No data returned from database after insert');
+      throw new InternalServerError('No data returned from database after insert');
     }
 
     // Transform entity to DTO
@@ -118,7 +119,7 @@ export class TripNotesService {
    * @param id - Trip note ID
    * @param supabase - Supabase client instance
    * @returns Promise<TripNoteEntity | null> - The trip note entity or null if not found
-   * @throws Error if database operation fails
+   * @throws InternalServerError if database operation fails
    */
   static async findById(
     id: number,
@@ -136,7 +137,7 @@ export class TripNotesService {
         return null;
       }
       console.error('Database error finding trip note:', error);
-      throw error;
+      throw new InternalServerError('Failed to find trip note');
     }
 
     return data;
@@ -147,14 +148,14 @@ export class TripNotesService {
    * 
    * @param tripNote - The trip note entity to check
    * @param userId - The authenticated user ID
-   * @throws Error with 'not_found' message if ownership check fails
+   * @throws NotFoundError if trip note doesn't exist or doesn't belong to user
    */
   static assertBelongsToUser(
     tripNote: TripNoteEntity | null,
     userId: string
   ): asserts tripNote is TripNoteEntity {
     if (!tripNote || tripNote.user_id !== userId) {
-      throw new Error('not_found');
+      throw new NotFoundError('Trip note not found');
     }
   }
 
@@ -169,7 +170,9 @@ export class TripNotesService {
    * @param userId - Authenticated user ID
    * @param supabase - Supabase client instance
    * @returns Promise<TripNoteEntity> - The updated (or unchanged) trip note entity
-   * @throws Error if database operation fails or destination has changed
+   * @throws NotFoundError if trip note doesn't exist or doesn't belong to user
+   * @throws ValidationError if destination has changed (immutable field)
+   * @throws InternalServerError if database operation fails
    */
   static async updateIfChanged(
     id: number,
@@ -183,7 +186,7 @@ export class TripNotesService {
 
     // Validate that destination has NOT changed (immutable field)
     if (current.destination !== command.destination) {
-      throw new Error('destination_immutable');
+      throw new ValidationError('Destination cannot be changed once a trip note is created');
     }
 
     // Check if any other fields have changed
@@ -214,11 +217,11 @@ export class TripNotesService {
 
     if (error) {
       console.error('Database error updating trip note:', error);
-      throw error;
+      throw new InternalServerError('Failed to update trip note');
     }
 
     if (!data) {
-      throw new Error('No data returned from database after update');
+      throw new InternalServerError('No data returned from database after update');
     }
 
     return data;
@@ -244,7 +247,7 @@ export class TripNotesService {
    * @param id - Trip note ID from path parameter
    * @param supabase - Supabase client instance
    * @returns Promise<TripNoteWithItineraryDTO | null> - Trip note with embedded itinerary, or null if not found/not owned
-   * @throws Error if database operation fails
+   * @throws InternalServerError if database operation fails
    */
   static async getOneWithItinerary(
     userId: string,
@@ -281,7 +284,7 @@ export class TripNotesService {
     // Handle database errors
     if (error) {
       console.error('Database error fetching trip note with itinerary:', error);
-      throw error;
+      throw new InternalServerError('Failed to fetch trip note with itinerary');
     }
 
     // Return null if no trip note found (either doesn't exist or doesn't belong to user)
@@ -318,13 +321,74 @@ export class TripNotesService {
   }
 
   /**
+   * Deletes a trip note belonging to the authenticated user
+   * 
+   * Verifies ownership before deletion to prevent unauthorized access.
+   * Thanks to ON DELETE CASCADE constraints, related itineraries and 
+   * AI generation jobs are automatically removed.
+   * 
+   * @param id - Trip note ID to delete
+   * @param userId - Authenticated user ID from session
+   * @param supabase - Supabase client instance
+   * @returns Promise<void>
+   * @throws NotFoundError if trip note doesn't exist for this user
+   * @throws ForbiddenError if trip note belongs to different user
+   * @throws InternalServerError if database operation fails
+   */
+  static async deleteTripNote(
+    id: number,
+    userId: string,
+    supabase: SupabaseClient
+  ): Promise<void> {
+    // Verify ownership: check that trip note exists and belongs to user
+    const { data: ownershipCheck, error: checkError } = await supabase
+      .from('trip_notes')
+      .select('id, user_id')
+      .eq('id', id)
+      .maybeSingle();
+
+    // Handle database errors during ownership check
+    if (checkError) {
+      console.error('Database error checking trip note ownership:', checkError);
+      throw new NotFoundError('Trip note not found');
+    }
+
+    // If trip note doesn't exist at all, return 404
+    if (!ownershipCheck) {
+      throw new NotFoundError('Trip note not found');
+    }
+
+    // If trip note exists but belongs to different user, return 403
+    if (ownershipCheck.user_id !== userId) {
+      throw new ForbiddenError('You do not have permission to delete this trip note');
+    }
+
+    // Perform deletion
+    // ON DELETE CASCADE will automatically remove related:
+    // - itineraries (1-to-1 relationship)
+    // - ai_generation_jobs (1-to-N relationship)
+    const { error: deleteError } = await supabase
+      .from('trip_notes')
+      .delete()
+      .eq('id', id);
+
+    // Handle database errors during deletion
+    if (deleteError) {
+      console.error('Database error deleting trip note:', deleteError);
+      throw new InternalServerError('Failed to delete trip note');
+    }
+
+    // Success - no return value needed
+  }
+
+  /**
    * Lists trip notes for a user with pagination, filtering, and sorting
    * 
    * @param query - Validated query parameters (page, pageSize, filters, sort)
    * @param userId - Authenticated user ID from session
    * @param supabase - Supabase client instance
    * @returns Promise<PaginatedResponse<TripNoteListItemDTO>> - Paginated list of trip notes
-   * @throws Error if database operation fails
+   * @throws InternalServerError if database operation fails
    */
   static async listTripNotes(
     query: TripNotesListQuery,
@@ -371,11 +435,11 @@ export class TripNotesService {
     // Handle database errors
     if (error) {
       console.error('Database error listing trip notes:', error);
-      throw error;
+      throw new InternalServerError('Failed to list trip notes');
     }
 
     if (!data) {
-      throw new Error('No data returned from database');
+      throw new InternalServerError('No data returned from database');
     }
 
     // Transform rows to TripNoteListItemDTO

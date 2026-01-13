@@ -10,6 +10,7 @@ import type {
   ItineraryEntity,
   ItineraryDTO,
 } from '../../types';
+import { InternalServerError } from '../errors';
 
 /**
  * Transforms an ItineraryEntity (snake_case) to ItineraryDTO (camelCase)
@@ -40,7 +41,7 @@ export class ItinerariesService {
    * @param supabase - Supabase client instance
    * @param suggestedTripLength - Optional suggested trip length from AI
    * @returns Promise<ItineraryDTO> - The created itinerary in DTO format
-   * @throws Error if database operation fails
+   * @throws InternalServerError if database operation fails
    */
   static async create(
     tripNoteId: number,
@@ -67,11 +68,11 @@ export class ItinerariesService {
     // Handle database errors
     if (error) {
       console.error('Database error creating itinerary:', error);
-      throw error;
+      throw new InternalServerError('Failed to create itinerary');
     }
 
     if (!data) {
-      throw new Error('No data returned from database after insert');
+      throw new InternalServerError('No data returned from database after insert');
     }
 
     // Transform entity to DTO
@@ -84,7 +85,7 @@ export class ItinerariesService {
    * @param tripNoteId - Trip note ID
    * @param supabase - Supabase client instance
    * @returns Promise<ItineraryEntity | null> - The itinerary entity or null if not found
-   * @throws Error if database operation fails
+   * @throws InternalServerError if database operation fails
    */
   static async findByTripNoteId(
     tripNoteId: number,
@@ -102,7 +103,7 @@ export class ItinerariesService {
         return null;
       }
       console.error('Database error finding itinerary:', error);
-      throw error;
+      throw new InternalServerError('Failed to find itinerary');
     }
 
     return data;
@@ -115,7 +116,7 @@ export class ItinerariesService {
    * @param itinerary - Updated itinerary text
    * @param supabase - Supabase client instance
    * @returns Promise<ItineraryDTO> - The updated itinerary in DTO format
-   * @throws Error if database operation fails
+   * @throws InternalServerError if database operation fails
    */
   static async update(
     id: number,
@@ -131,11 +132,11 @@ export class ItinerariesService {
 
     if (error) {
       console.error('Database error updating itinerary:', error);
-      throw error;
+      throw new InternalServerError('Failed to update itinerary');
     }
 
     if (!data) {
-      throw new Error('No data returned from database after update');
+      throw new InternalServerError('No data returned from database after update');
     }
 
     return entityToDTO(data);

@@ -12,6 +12,7 @@ import { CreateTripNoteSchema } from '../../lib/schemas/tripNote.schema';
 import { TripNotesListQuerySchema } from '../../lib/schemas/tripNotesListQuery.schema';
 import { TripNotesService } from '../../lib/services/tripNotes.service';
 import { DEFAULT_USER_ID } from '../../db/supabase.client';
+import { createErrorResponse, createJsonResponse } from '../../lib/httpHelpers';
 
 /**
  * Maps Supabase/Postgres error codes to HTTP status codes and messages
@@ -47,13 +48,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
 
     // Check for authentication
     if (!userId) {
-      return new Response(
-        JSON.stringify({ error: 'unauthorized' }),
-        {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      return createErrorResponse(401, 'Unauthorized');
     }
 
     // Extract query parameters from URL
@@ -72,16 +67,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
 
     if (!validationResult.success) {
       const errors = validationResult.error.flatten();
-      return new Response(
-        JSON.stringify({
-          error: 'Validation failed',
-          details: errors.fieldErrors,
-        }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      return createErrorResponse(400, 'Validation failed', errors.fieldErrors);
     }
 
     // Fetch trip notes via service layer
@@ -92,13 +78,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
     );
 
     // Return paginated result
-    return new Response(
-      JSON.stringify(result),
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return createJsonResponse(result);
 
   } catch (error: any) {
     // Log error for debugging
@@ -106,14 +86,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
 
     // Map database errors to appropriate HTTP responses
     const { status, message } = mapDatabaseError(error, 'fetching');
-
-    return new Response(
-      JSON.stringify({ error: message }),
-      {
-        status,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return createErrorResponse(status, message);
   }
 };
 
@@ -130,13 +103,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Temporary check - remove when auth is implemented
     if (!userId) {
-      return new Response(
-        JSON.stringify({ error: 'unauthorized' }),
-        {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      return createErrorResponse(401, 'Unauthorized');
     }
 
     // Parse request body
@@ -144,13 +111,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     try {
       body = await request.json();
     } catch {
-      return new Response(
-        JSON.stringify({ error: 'Invalid JSON in request body' }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      return createErrorResponse(400, 'Invalid JSON in request body');
     }
 
     // Validate request body with Zod
@@ -158,16 +119,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     if (!validationResult.success) {
       const errors = validationResult.error.flatten();
-      return new Response(
-        JSON.stringify({
-          error: 'Validation failed',
-          details: errors.fieldErrors,
-        }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      return createErrorResponse(400, 'Validation failed', errors.fieldErrors);
     }
 
     // Create trip note via service layer
@@ -178,13 +130,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     );
 
     // Return created trip note
-    return new Response(
-      JSON.stringify(tripNote),
-      {
-        status: 201,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return createJsonResponse(tripNote, 201);
 
   } catch (error: any) {
     // Log error for debugging
@@ -192,14 +138,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Map database errors to appropriate HTTP responses
     const { status, message } = mapDatabaseError(error, 'creating');
-
-    return new Response(
-      JSON.stringify({ error: message }),
-      {
-        status,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return createErrorResponse(status, message);
   }
 };
 

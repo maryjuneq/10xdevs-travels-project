@@ -9,6 +9,7 @@ import type {
   UserPreferenceEntity,
   UserPreferenceDTO,
 } from '../../types';
+import { InternalServerError } from '../errors';
 
 /**
  * Transforms a UserPreferenceEntity (snake_case) to UserPreferenceDTO (camelCase)
@@ -36,7 +37,7 @@ export class PreferencesService {
    * @param userId - Authenticated user ID
    * @param supabase - Supabase client instance
    * @returns Promise<UserPreferenceDTO[]> - Array of user preferences in DTO format
-   * @throws Error if database operation fails
+   * @throws InternalServerError if database operation fails
    */
   static async listByUser(
     userId: string,
@@ -51,7 +52,7 @@ export class PreferencesService {
 
     if (error) {
       console.error('Database error fetching user preferences:', error);
-      throw error;
+      throw new InternalServerError('Failed to fetch user preferences');
     }
 
     // Return empty array if no preferences found (not an error)

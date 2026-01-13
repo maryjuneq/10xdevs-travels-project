@@ -11,6 +11,7 @@ import type {
   GenerationJobDTO,
   GenerationStatus,
 } from '../../types';
+import { InternalServerError } from '../errors';
 
 /**
  * Transforms a GenerationJobEntity (snake_case) to GenerationJobDTO (camelCase)
@@ -65,11 +66,11 @@ export class JobsService {
 
     if (error) {
       console.error('Database error logging successful job:', error);
-      throw error;
+      throw new InternalServerError('Failed to log successful generation job');
     }
 
     if (!data) {
-      throw new Error('No data returned from database after job insert');
+      throw new InternalServerError('No data returned from database after job insert');
     }
 
     return entityToDTO(data);
@@ -84,7 +85,7 @@ export class JobsService {
    * @param supabase - Supabase client instance
    * @param durationMs - Optional duration before failure (null if never started)
    * @returns Promise<GenerationJobDTO> - The created job record in DTO format
-   * @throws Error if database operation fails
+   * @throws InternalServerError if database operation fails
    */
   static async logFailed(
     tripNoteId: number,
@@ -109,11 +110,11 @@ export class JobsService {
 
     if (error) {
       console.error('Database error logging failed job:', error);
-      throw error;
+      throw new InternalServerError('Failed to log failed generation job');
     }
 
     if (!data) {
-      throw new Error('No data returned from database after job insert');
+      throw new InternalServerError('No data returned from database after job insert');
     }
 
     return entityToDTO(data);
@@ -126,7 +127,7 @@ export class JobsService {
    * @param tripNoteId - ID of the trip note
    * @param supabase - Supabase client instance
    * @returns Promise<GenerationJobDTO[]> - Array of job records in DTO format
-   * @throws Error if database operation fails
+   * @throws InternalServerError if database operation fails
    */
   static async listByTripNote(
     tripNoteId: number,
@@ -140,7 +141,7 @@ export class JobsService {
 
     if (error) {
       console.error('Database error listing jobs:', error);
-      throw error;
+      throw new InternalServerError('Failed to list generation jobs');
     }
 
     if (!data || data.length === 0) {

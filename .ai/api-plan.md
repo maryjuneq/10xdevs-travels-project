@@ -29,7 +29,7 @@
 - `page` ≧ 1 (default 1)
 - `pageSize` 1-100 (default 20)
 - `destination` → case-insensitive substring filter
-- `startFrom`, `startTo` → filter by `earliest_start_date`
+- `startFrom` → filter by `earliest_start_date`
 - `sort` → `destination|earliest_start_date|created_at` (prefix `-` for desc)
 - `filter` by `hasItenerary`
 
