@@ -46,6 +46,7 @@ This table is managed by Supabase Auth.
 | user_id | uuid | not null, references `users(id)` on delete cascade |
 | suggested_trip_length | smallint | |
 | itinerary | text | not null |
+| manually_edited | boolean | default `false` |
 | created_at | timestamptz | default `now()` |
 | updated_at | timestamptz | default `now()` |
 

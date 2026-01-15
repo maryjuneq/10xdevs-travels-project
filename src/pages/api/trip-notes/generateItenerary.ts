@@ -129,16 +129,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return createErrorResponse(500, "Failed to generate itinerary");
     }
 
-    // Persist itinerary to database
+    // Persist itinerary to database (create or regenerate)
     let itinerary;
     try {
-      itinerary = await ItinerariesService.create(
-        tripNoteId,
-        aiResult.itinerary,
-        userId,
-        supabase,
-        aiResult.suggestedTripLength
-      );
+      const existing = await ItinerariesService.findByTripNoteId(tripNoteId, supabase);
+
+      if (existing) {
+        // Regenerate scenario – overwrite text and set manuallyEdited = false
+        itinerary = await ItinerariesService.update(existing.id, aiResult.itinerary, false, supabase);
+      } else {
+        // First-time generation
+        itinerary = await ItinerariesService.create(
+          tripNoteId,
+          aiResult.itinerary,
+          userId,
+          supabase,
+          aiResult.suggestedTripLength
+        );
+      }
     } catch (error: any) {
       console.error("Error persisting itinerary:", error);
       // Log failed job - database insert error

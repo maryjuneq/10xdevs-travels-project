@@ -19,12 +19,13 @@ Supporting domains include Authentication (Supabase) and Account Management. Eac
 • Primary CTA buttons: “Add Note”, “Manage Preferences” | • Keyboard-navigable table rows  
 • `aria-label` on itinerary badge  
 • Data fetched via `GET /api/trip-notes` with React Query; page & filter params mirror URL search params. |
-| 2 | Trip Note Detail | `/trip-notes/:id` | Enable creating, viewing, and editing a Trip Note and its generated itinerary in a two-pane layout. | • ResizablePanelGroup with NoteForm (left) and ItineraryViewer (right)  
+| 2 | Trip Note Detail | `/trip-notes/:id` | Enable creating, viewing, and editing a Trip Note and its generated itinerary in a two-pane layout. | • ResizablePanelGroup with NoteForm (left) and ItineraryForm (right)  
 • Primary Action Button (Save / Generate / Save & Regenerate)  
+• Switch for manual edit on generated itenerary (visible only when itenerary exists) 
 • GenerationModal overlay (timer, progress)  
 • DeleteNoteButton with confirmation | • Split-pane fully keyboard draggable via Shadcn accessibility hooks  
 • Form inputs use `label` & error messages mapped from `400` responses  
-• GET `/api/trip-notes/{id}`; POST `/api/trip-notes/generateItenerary`  
+• GET `/api/trip-notes/{id}`; POST `/api/trip-notes/generateItenerary`; PUT `api/iteneraries/{id}`
 • UnsavedPrompt on internal navigation. |
 | 3 | Add Trip Note | `/trip-notes/new` (shares componentry with Detail) | Create a new Trip Note. | • Empty NoteForm  
 • Disabled right-pane placeholder (“No itinerary yet”) | • Destination field initially editable; other rules identical to View 2. |
@@ -59,7 +60,8 @@ Supporting domains include Authentication (Supabase) and Account Management. Eac
 4. **Return to Note Detail** (`/trip-notes/:id`) – left pane editable, right pane placeholder. Primary button now “Generate Plan”.  
 5. **Generate Itinerary** – click triggers GenerationModal; UI locked.  
    • POST `/api/trip-notes/generateItenerary`  
-6. **View Itinerary** – on success modal closes, right pane populated with read-only itinerary; primary button becomes “Save & Regenerate”.  
+6. **View Itinerary** – on success modal closes, right pane populated with read-only itinerary; primary button becomes “Save & Regenerate”.  The switch appears over itenerary panel "Manual edit". 
+**Edit Itenerary** - If users swiches manual edit switch, itenerary becomes editable. When users edits the itenerary text details, on blur it saves changes by calling `PUT api/iteneraries/{id}`.
 7. **Navigate Back** – back arrow or breadcrumb → Dashboard shows badge on edited note.  
 8. **Manage Preferences** (optional) – Dashboard “Manage Preferences” → Preferences grid; creates/deletes tiles.  
 9. **Account Settings** (optional) – User menu → Delete Account confirmation.
@@ -93,6 +95,7 @@ Navigation interactions adhere to SPA rules: client-side link elements (`<a>` wi
 | **ItineraryBadge** | Green checkmark with `aria-label="has itinerary"`. | Note rows |
 | **NoteForm** | Controlled form with destination, dates(“Flexible dates?” checkbox shows both earliest & latest pickers; if unchecked, latest date auto-mirrors earliest.), group size, budget, details. | Add & Detail views |
 | **PrimaryActionButton** | Context-aware CTA (Save / Generate / Save & Regenerate). | Note Detail |
+| **IteneraryForm** | Controlled form “Manual edit” switch; if switched on, itenerary text becomes editable and is automatically saved on loosing focus. | |
 | **ResizablePanelGroup** | Shadcn/ui wrapper providing accessible split-pane. | Note Detail |
 | **GenerationModal** | Full-screen overlay displaying spinner and elapsed timer. | Note Detail (portal) |
 | **DateRangePicker** | `react-day-picker` based component supporting flexible vs fixed dates. | NoteForm |
@@ -121,7 +124,7 @@ Navigation interactions adhere to SPA rules: client-side link elements (`<a>` wi
 | US-007 | Preferences view | Tile grid CRUD |
 | US-008 | PrimaryActionButton + GenerationModal | 60 s SLA feedback |
 | US-009 | Error toast + retry path | Modal closes on error |
-| US-010 (deferred) | *Future*: editable itinerary | Not in MVP |
+| US-010 | Editable itinerary |  |
 | US-011 | Account Deletion view / dialog | Cascade deletion confirmation |
 | US-013 | Middleware + React Query hooks | All protected routes check JWT |
 

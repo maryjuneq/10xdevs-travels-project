@@ -92,16 +92,16 @@
 
 ---
 
-### 2.3 Itineraries (deferred - handled by other endpoints)
+### 2.3 Itineraries 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/api/trip-notes/{id}/itinerary` | Retrieve itinerary for a note. Returns `404` if none exists. |
-| `PUT` | `/api/trip-notes/{id}/itinerary` | Replace entire itinerary text (manual edits). |
+| `PUT` | `/api/itineraries/{id}` | Replace entire itinerary text (manual edits). |
 
 **Request Payload (PUT )**
 ```json
 {
-  "itinerary": "Day 1: … Day 2: …"
+  "itinerary": "Day 1: … Day 2: …",
+  "manuallyEdited": true
 }
 ```
 

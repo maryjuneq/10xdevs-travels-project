@@ -19,6 +19,7 @@ function entityToDTO(entity: ItineraryEntity): ItineraryDTO {
     tripNoteId: entity.trip_note_id,
     suggestedTripLength: entity.suggested_trip_length,
     itinerary: entity.itinerary,
+    manuallyEdited: entity.manually_edited,
     createdAt: entity.created_at,
     updatedAt: entity.updated_at,
   };
@@ -104,8 +105,8 @@ export class ItinerariesService {
    * @returns Promise<ItineraryDTO> - The updated itinerary in DTO format
    * @throws InternalServerError if database operation fails
    */
-  static async update(id: number, itinerary: string, supabase: SupabaseClient): Promise<ItineraryDTO> {
-    const { data, error } = await supabase.from("itineraries").update({ itinerary }).eq("id", id).select().single();
+  static async update(id: number, itinerary: string, manuallyEdited: boolean, supabase: SupabaseClient): Promise<ItineraryDTO> {
+    const { data, error } = await supabase.from("itineraries").update({ itinerary, manually_edited: manuallyEdited }).eq("id", id).select().single();
 
     if (error) {
       console.error("Database error updating itinerary:", error);

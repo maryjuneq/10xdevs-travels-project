@@ -142,13 +142,14 @@ export interface ItineraryDTO {
   tripNoteId: number;
   suggestedTripLength: number | null;
   itinerary: string;
+  manuallyEdited: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
 /**
  * Command for updating an itinerary
- * Used in PUT /api/trip-notes/{id}/itinerary
+ * Used in PUT /api/itineraries/{id}
  * Allows manual editing of the itinerary text
  */
 export interface UpdateItineraryCommand {
