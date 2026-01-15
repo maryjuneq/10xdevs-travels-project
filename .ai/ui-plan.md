@@ -20,7 +20,7 @@ Supporting domains include Authentication (Supabase) and Account Management. Eac
 • `aria-label` on itinerary badge  
 • Data fetched via `GET /api/trip-notes` with React Query; page & filter params mirror URL search params. |
 | 2 | Trip Note Detail | `/trip-notes/:id` | Enable creating, viewing, and editing a Trip Note and its generated itinerary in a two-pane layout. | • ResizablePanelGroup with NoteForm (left) and ItineraryForm (right)  
-• Primary Action Button (Save / Generate / Save & Regenerate)  
+• Primary Action Button (Save / Save & Generate)  
 • Switch for manual edit on generated itenerary (visible only when itenerary exists) 
 • GenerationModal overlay (timer, progress)  
 • DeleteNoteButton with confirmation | • Split-pane fully keyboard draggable via Shadcn accessibility hooks  
@@ -57,7 +57,7 @@ Supporting domains include Authentication (Supabase) and Account Management. Eac
 2. **Add Note** – clicks “Add Note” → **Add Trip Note** (`/trip-notes/new`).  
 3. **Create Note** – fills in destination, dates, etc. → clicks “Save Note”.  
    • Backend `POST /api/trip-notes` returns new ID; React Query cache invalidated.  
-4. **Return to Note Detail** (`/trip-notes/:id`) – left pane editable, right pane placeholder. Primary button now “Generate Plan”.  
+4. **Return to Note Detail** (`/trip-notes/:id`) – left pane editable, right pane placeholder. Primary button now “Save & Generate”.  
 5. **Generate Itinerary** – click triggers GenerationModal; UI locked.  
    • POST `/api/trip-notes/generateItenerary`  
 6. **View Itinerary** – on success modal closes, right pane populated with read-only itinerary; primary button becomes “Save & Regenerate”.  The switch appears over itenerary panel "Manual edit". 
@@ -69,7 +69,7 @@ Supporting domains include Authentication (Supabase) and Account Management. Eac
 ### Alternate / Error Paths
 
 • Validation errors show inline under fields with focus-jump for screen readers.  
-• Generation failure closes modal and shows inline message; primary button resets to “Generate Plan” for retry.  
+• Generation failure closes modal and shows inline message; primary button resets to “Save & Generate” for retry.  
 • Unsaved edits prompt on route change.
 
 ## 4. Layout and Navigation Structure

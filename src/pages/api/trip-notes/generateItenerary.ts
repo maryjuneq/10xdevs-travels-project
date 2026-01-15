@@ -4,7 +4,7 @@
  *
  * Authentication: Requires valid Supabase session (using DEFAULT_USER_ID for dev)
  * Request Body: GenerateItineraryInput (CreateTripNoteCommand + id)
- * Response: 201 Created with ItineraryDTO
+ * Response: 201 Created with TripNoteWithItineraryDTO
  *
  * Flow:
  * 1. Validate request body (Zod schema)
@@ -13,7 +13,7 @@
  * 4. Fetch user preferences
  * 5. Generate itinerary via AI service
  * 6. Persist itinerary and log success
- * 7. Return created itinerary
+ * 7. Return updated trip note with generated itinerary
  */
 
 import type { APIRoute } from "astro";
@@ -170,8 +170,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
       console.error("Warning: Failed to log successful job:", error);
     }
 
-    // Return created itinerary
-    return createJsonResponse(itinerary, 201);
+    // Transform full itinerary to light DTO for consistent response format
+    const lightItineraryDTO = {
+      id: itinerary.id,
+      suggestedTripLength: itinerary.suggestedTripLength,
+      itinerary: itinerary.itinerary,
+    };
+
+    // Combine updated trip note with generated itinerary
+    const tripNoteDTO = TripNotesService.toPromptDTO(updatedTripNote);
+    const response = {
+      ...tripNoteDTO,
+      itinerary: lightItineraryDTO,
+    };
+
+    // Return combined trip note with itinerary
+    return createJsonResponse(response, 201);
   } catch (error: any) {
     // Catch-all error handler for unexpected errors
     console.error("Unexpected error in POST /api/trip-notes/generateItenerary:", error);

@@ -21,7 +21,7 @@
 | `GET` | `/api/trip-notes` | List notes for authenticated user. Returns simplified objects (`id`, `destination`, `earliestStartDate`, `approximateTripLength`, `createdAt`, `updatedAt`, `hasItinerary`) and supports pagination, filtering & sorting. |
 | `POST` | `/api/trip-notes` | Create a new trip note. |
 | `GET` | `/api/trip-notes/{id}` | Fetch a single note. Includes `itinerary` object if one exists. |
-| `PUT` | `/api/trip-notes/{id}` | Replace a note in full. |
+| `PUT` | `/api/trip-notes/{id}` | Update a trip note (full update). **Note**: `destination` is immutable and cannot be changed. |
 | `DELETE` | `/api/trip-notes/{id}` | Delete a note (cascades itinerary & jobs). |
 | `POST` | `/api/trip-notes/generateItenerary` | Note has to exist in database. Based on passed trip note data(in request body), and queried user preferences, calls the AI service for itenerary and awaits the response. On success: stores itinerary, creates a *succeeded* job record, and returns the itinerary payload (see 2.3). On failure: stores a *failed* job record and returns an error with details. |
 
@@ -48,7 +48,7 @@
 ]
 ```
 
-**Request Payload (`POST` / `PUT`)**
+**Request Payload (`POST`)**
 ```json
 {
   "destination": "Tokyo, Japan",
@@ -61,6 +61,21 @@
   "details": "Cherry blossom season!"
 }
 ```
+
+**Request Payload (`PUT`)**
+```json
+{
+  "destination": "Tokyo, Japan",
+  "earliestStartDate": "2026-03-10",
+  "latestStartDate": "2026-03-15",
+  "groupSize": 4,
+  "approximateTripLength": 7,
+  "budgetAmount": 2500,
+  "currency": "USD",
+  "details": "Cherry blossom season!"
+}
+```
+**Note**: While `destination` must be included in the request body for validation, it cannot be changed from the original value. Attempting to change the destination will result in a validation error.
 
 **Response Payload (single)**
 ```json

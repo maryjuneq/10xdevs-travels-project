@@ -5,9 +5,10 @@
  */
 
 import type { SupabaseClient } from "../../db/supabase.client";
-import type { TablesInsert } from "../../db/database.types";
+import type { TablesInsert, TablesUpdate } from "../../db/database.types";
 import type {
   CreateTripNoteCommand,
+  UpdateTripNoteCommand,
   TripNoteEntity,
   TripNoteDTO,
   TripNotesListQuery,
@@ -16,7 +17,7 @@ import type {
   TripNoteWithItineraryDTO,
   LightItineraryDTO,
 } from "../../types";
-import { NotFoundError, ForbiddenError, ValidationError, InternalServerError } from "../errors";
+import { NotFoundError, ForbiddenError, ValidationError, InternalServerError, ConflictError } from "../errors";
 
 /**
  * Transforms a CreateTripNoteCommand (camelCase) to database insert format (snake_case)
@@ -25,6 +26,22 @@ function commandToInsert(command: CreateTripNoteCommand, userId: string): Tables
   return {
     user_id: userId,
     destination: command.destination,
+    earliest_start_date: command.earliestStartDate,
+    latest_start_date: command.latestStartDate,
+    group_size: command.groupSize,
+    approximate_trip_length: command.approximateTripLength,
+    budget_amount: command.budgetAmount ?? null,
+    currency: command.currency ?? null,
+    details: command.details ?? null,
+  };
+}
+
+/**
+ * Transforms an UpdateTripNoteCommand (camelCase) to database update format (snake_case)
+ * Note: destination is excluded as per business requirement (immutable field)
+ */
+function commandToUpdate(command: UpdateTripNoteCommand): TablesUpdate<"trip_notes"> {
+  return {
     earliest_start_date: command.earliestStartDate,
     latest_start_date: command.latestStartDate,
     group_size: command.groupSize,
@@ -292,6 +309,109 @@ export class TripNotesService {
     const itineraryDTO = data.itineraries ? itineraryToLightDTO(data.itineraries) : null;
 
     // Compose and return combined DTO
+    return {
+      ...tripNoteDTO,
+      itinerary: itineraryDTO,
+    };
+  }
+
+  /**
+   * Updates an existing trip note and returns it with its itinerary
+   *
+   * Uses a single query with UPDATE...RETURNING to update and fetch in one round-trip.
+   * Enforces user ownership and immutability of destination field.
+   * Note: Destination cannot be updated - it's an immutable field.
+   *
+   * @param id - Trip note ID to update
+   * @param command - Validated UpdateTripNoteCommand from request body
+   * @param userId - Authenticated user ID from session
+   * @param supabase - Supabase client instance
+   * @returns Promise<TripNoteWithItineraryDTO> - Updated trip note with embedded itinerary
+   * @throws NotFoundError if trip note doesn't exist for this user
+   * @throws ForbiddenError if trip note belongs to different user
+   * @throws ValidationError if destination has changed (immutable field)
+   * @throws ConflictError if unique constraint violation occurs
+   * @throws InternalServerError if database operation fails
+   */
+  static async updateTripNote(
+    id: number,
+    command: UpdateTripNoteCommand,
+    userId: string,
+    supabase: SupabaseClient
+  ): Promise<TripNoteWithItineraryDTO> {
+    // First, verify ownership, that trip note exists, and get current destination
+    const { data: currentNote, error: checkError } = await supabase
+      .from("trip_notes")
+      .select("id, user_id, destination")
+      .eq("id", id)
+      .maybeSingle();
+
+    // Handle database errors during ownership check
+    if (checkError) {
+      console.error("Database error checking trip note ownership:", checkError);
+      throw new InternalServerError("Failed to verify trip note ownership");
+    }
+
+    // If trip note doesn't exist at all, return 404
+    if (!currentNote) {
+      throw new NotFoundError("Trip note not found");
+    }
+
+    // If trip note exists but belongs to different user, return 403
+    if (currentNote.user_id !== userId) {
+      throw new ForbiddenError("You do not have permission to update this trip note");
+    }
+
+    // Validate that destination has NOT changed (immutable field)
+    if (currentNote.destination !== command.destination) {
+      throw new ValidationError("Destination cannot be changed once a trip note is created");
+    }
+
+    // Transform command to update format (excludes destination - immutable field)
+    const updateData = commandToUpdate(command);
+
+    // Perform update and return updated row
+    const { data: updatedNote, error: updateError } = await supabase
+      .from("trip_notes")
+      .update(updateData)
+      .eq("id", id)
+      .eq("user_id", userId)
+      .select()
+      .single();
+
+    // Handle database errors during update
+    if (updateError) {
+      // Check for unique constraint violation (23505 is PostgreSQL code for unique_violation)
+      if (updateError.code === "23505") {
+        throw new ConflictError("A trip note with this destination and date range already exists");
+      }
+
+      console.error("Database error updating trip note:", updateError);
+      throw new InternalServerError("Failed to update trip note");
+    }
+
+    if (!updatedNote) {
+      throw new InternalServerError("No data returned from database after update");
+    }
+
+    // Fetch itinerary for the updated trip note
+    const { data: itinerary, error: itineraryError } = await supabase
+      .from("itineraries")
+      .select("id, suggested_trip_length, itinerary")
+      .eq("trip_note_id", id)
+      .maybeSingle();
+
+    // Handle database errors during itinerary fetch
+    if (itineraryError) {
+      console.error("Database error fetching itinerary:", itineraryError);
+      throw new InternalServerError("Failed to fetch itinerary");
+    }
+
+    // Transform to DTOs
+    const tripNoteDTO = entityToDTO(updatedNote);
+    const itineraryDTO = itinerary ? itineraryToLightDTO(itinerary) : null;
+
+    // Return combined DTO
     return {
       ...tripNoteDTO,
       itinerary: itineraryDTO,
