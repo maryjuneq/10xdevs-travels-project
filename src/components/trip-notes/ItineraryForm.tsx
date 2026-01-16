@@ -1,10 +1,11 @@
 import * as React from "react";
-import { Edit3, Sparkles } from "lucide-react";
+import { Edit3, Sparkles, Save } from "lucide-react";
 import type { LightItineraryDTO } from "@/types";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export interface ItineraryFormProps {
   itinerary?: LightItineraryDTO | null;
@@ -26,7 +27,7 @@ export function ItineraryForm({ itinerary, onUpdate, disabled = false }: Itinera
     }
   }, [itinerary?.itinerary]);
 
-  const handleBlur = async () => {
+  const handleSaveChanges = async () => {
     // Only save if text has changed and we're in manual edit mode
     if (manualEditMode && itineraryText !== previousTextRef.current && itineraryText.trim()) {
       setIsSaving(true);
@@ -41,6 +42,9 @@ export function ItineraryForm({ itinerary, onUpdate, disabled = false }: Itinera
       }
     }
   };
+
+  // Check if there are unsaved changes
+  const hasUnsavedChanges = itineraryText !== previousTextRef.current;
 
   const handleManualEditToggle = (checked: boolean) => {
     setManualEditMode(checked);
@@ -97,17 +101,32 @@ export function ItineraryForm({ itinerary, onUpdate, disabled = false }: Itinera
         <Textarea
           value={itineraryText}
           onChange={(e) => setItineraryText(e.target.value)}
-          onBlur={handleBlur}
           disabled={!manualEditMode || disabled || isSaving}
           className="flex-1 min-h-0 resize-none font-mono text-sm"
           placeholder="Your itinerary will appear here..."
           aria-label="Itinerary content"
         />
-        {isSaving && (
-          <p className="text-xs text-muted-foreground mt-2">Saving changes...</p>
-        )}
-        {manualEditMode && !isSaving && (
-          <p className="text-xs text-muted-foreground mt-2">Changes will be saved automatically when you click outside the text area.</p>
+        
+        {/* Save Changes Button - only visible when Edit mode is on */}
+        {manualEditMode && (
+          <div className="mt-4 flex items-center justify-between">
+            <div>
+              {isSaving && (
+                <p className="text-xs text-muted-foreground">Saving changes...</p>
+              )}
+              {!isSaving && hasUnsavedChanges && (
+                <p className="text-xs text-muted-foreground">You have unsaved changes</p>
+              )}
+            </div>
+            <Button
+              onClick={handleSaveChanges}
+              disabled={!hasUnsavedChanges || isSaving || disabled}
+              size="sm"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save Changes
+            </Button>
+          </div>
         )}
       </div>
     </div>

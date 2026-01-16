@@ -95,10 +95,26 @@ export function NoteForm({ initialValues, onSubmit, disabled = false, children, 
   const handleFlexibleDatesChange = (checked: boolean) => {
     setFlexibleDates(checked);
     if (!checked && earliestStartDate) {
-      // Mirror earliest date to latest date
+      // Mirror earliest date to latest date when disabling flexible dates
       setValue("latestStartDate", earliestStartDate, { shouldValidate: true });
+    } else if (checked && earliestStartDate) {
+      // Pre-populate latest date with earliest date when enabling flexible dates
+      // Only if latest date is not set or is less than earliest date
+      if (!latestStartDate || latestStartDate < earliestStartDate) {
+        setValue("latestStartDate", earliestStartDate, { shouldValidate: true });
+      }
     }
   };
+
+  // Auto-populate Latest Start Date when Earliest Start Date changes and flexible dates is enabled
+  React.useEffect(() => {
+    if (flexibleDates && earliestStartDate) {
+      // Only pre-populate if latest date is not set or is less than earliest date
+      if (!latestStartDate || latestStartDate < earliestStartDate) {
+        setValue("latestStartDate", earliestStartDate, { shouldValidate: true });
+      }
+    }
+  }, [earliestStartDate, flexibleDates, latestStartDate, setValue]);
 
   const handleFormSubmit = async (data: CreateTripNoteCommand) => {
     await onSubmit(data);
