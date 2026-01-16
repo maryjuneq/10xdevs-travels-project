@@ -1,0 +1,17 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import TripNoteDetailPage from "@/components/TripNoteDetailPage";
+
+// Get the id parameter from the URL
+const { id } = Astro.params;
+
+// Validate the id parameter
+if (!id) {
+  return Astro.redirect("/");
+}
+---
+
+<Layout title="Trip Note Detail">
+  <TripNoteDetailPage client:load id={id} />
+</Layout>
+
