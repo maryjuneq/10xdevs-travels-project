@@ -37,6 +37,12 @@ function TripNoteDetailPageContent({ id }: TripNoteDetailPageProps) {
   const [currentNoteId, setCurrentNoteId] = React.useState<number | null>(isNewNote ? null : noteId);
   const [isDirty, setIsDirty] = React.useState(false);
 
+  // Use a ref to avoid stale closure issues with shouldGenerateAfterSave
+  const shouldGenerateAfterSaveRef = React.useRef(shouldGenerateAfterSave);
+  React.useEffect(() => {
+    shouldGenerateAfterSaveRef.current = shouldGenerateAfterSave;
+  }, [shouldGenerateAfterSave]);
+
   // Use currentNoteId for the hook so it updates when note is created
   const {
     data: tripNote,
@@ -103,6 +109,8 @@ function TripNoteDetailPageContent({ id }: TripNoteDetailPageProps) {
 
   const handleSaveNote = async (values: CreateTripNoteCommand) => {
     try {
+      // Read from ref to get current value (avoid stale closure)
+      const shouldGenerate = shouldGenerateAfterSaveRef.current;
       const result = await save(values);
       
       // Mark as not dirty after successful save
@@ -121,7 +129,7 @@ function TripNoteDetailPageContent({ id }: TripNoteDetailPageProps) {
       }
 
       // If should generate after save, trigger generation
-      if (shouldGenerateAfterSave && result.id) {
+      if (shouldGenerate && result.id) {
         await handleGenerateItinerary(result.id, values);
       }
     } catch (err) {

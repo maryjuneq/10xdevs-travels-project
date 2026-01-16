@@ -213,19 +213,22 @@ src/
    - **Root Cause**: The `[appearance:textfield]` CSS class was explicitly hiding the spinners
    - **Solution**: 
      - Removed problematic Tailwind classes from number inputs
-     - Added global CSS to ensure webkit spinners are visible:
+     - Added global CSS with `!important` flags to force webkit spinners to be visible:
        ```css
        input[type="number"]::-webkit-inner-spin-button,
        input[type="number"]::-webkit-outer-spin-button {
-         opacity: 1;
-         height: 2rem;
+         -webkit-appearance: inner-spin-button !important;
+         opacity: 1 !important;
+         display: inline-block !important;
+         height: auto !important;
        }
        ```
    - **Result**: Spinners now visible in Chrome, Safari, Edge
    - **Note**: Firefox doesn't support native number input spinners (browser limitation), users can still type numbers or use keyboard up/down arrows
+   - **Update**: Strengthened CSS rules with `!important` to override any browser defaults or Tailwind utilities
    - **Files Modified**:
      - `src/components/trip-notes/NoteForm.tsx` - Removed conflicting CSS classes
-     - `src/styles/global.css` - Added explicit spinner visibility rules
+     - `src/styles/global.css` - Added explicit spinner visibility rules with strong specificity
 
 2. **Duplicate Note Error After First Save** - FIXED
    - **Problem**: After creating a new note, clicking save again would try to create a duplicate note instead of updating the existing one
@@ -244,6 +247,20 @@ src/
      - `src/components/TripNoteDetailPage.tsx` - Pass `currentNoteId` to hook
      - `src/components/hooks/useTripNoteDetail.ts` - Created flexible generate mutation that accepts noteId as parameter
 
+3. **Generate After Save Not Working** - FIXED
+   - **Problem**: When "Generate itinerary after saving" switch was ON and user clicked "Save & Generate Itinerary", the note saved but itinerary didn't generate
+   - **Root Cause**: React stale closure issue
+     - The `handleSaveNote` function captured the value of `shouldGenerateAfterSave` when it was created
+     - When the switch was toggled, the state updated but the callback still had the old captured value
+     - Console showed `shouldGenerateAfterSave: false` even when switch was ON
+   - **Solution**: Used a ref to access the current value at execution time
+     - Created `shouldGenerateAfterSaveRef` that's kept in sync with state via useEffect
+     - `handleSaveNote` reads from `shouldGenerateAfterSaveRef.current` instead of the captured state
+     - This ensures the latest value is always used
+   - **Result**: Generate toggle now works correctly - itinerary generation triggers when switch is ON
+   - **Files Modified**:
+     - `src/components/TripNoteDetailPage.tsx` - Added ref for shouldGenerateAfterSave, read from ref in handleSaveNote
+
 ### Changes Summary
 - ✅ Form submission now working correctly
 - ✅ User feedback via toast notifications implemented
@@ -251,6 +268,7 @@ src/
 - ✅ Clear error messages for all operations
 - ✅ Number input spinners now visible (Chrome/Safari/Edge)
 - ✅ Save button correctly updates notes instead of creating duplicates
+- ✅ "Generate after save" toggle now works correctly (fixed stale closure)
 
 ## Next Steps
 1. Add integration tests for the complete user flow

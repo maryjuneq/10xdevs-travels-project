@@ -121,7 +121,14 @@
   /* Ensure number input spinners are visible in Chrome/Safari/Edge */
   input[type="number"]::-webkit-inner-spin-button,
   input[type="number"]::-webkit-outer-spin-button {
-    opacity: 1;
-    height: 2rem;
+    -webkit-appearance: inner-spin-button !important;
+    opacity: 1 !important;
+    display: inline-block !important;
+    height: auto !important;
+  }
+
+  /* Firefox doesn't support native spinners - use textfield appearance */
+  input[type="number"] {
+    -moz-appearance: textfield;
   }
 }
