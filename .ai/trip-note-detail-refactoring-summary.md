@@ -75,7 +75,57 @@ React.useEffect(() => {
 
 ---
 
-#### 2. **Save Changes Button for Itinerary Editing** ✅
+#### 2. **Date Picker Calendar Opens to Selected Month** ✅
+
+**Issue**: When users clicked to edit a date that was already selected (e.g., April 27th), the calendar would open showing the current month (January) instead of the month of the selected date.
+
+**Requested Behavior**: Calendar should open to the month of the currently selected date, making it easier for users to adjust dates without navigating through months.
+
+**Implementation**:
+- Modified `DatePicker` component in `src/components/ui/date-picker.tsx`
+- Added `defaultMonth` prop to the Calendar component
+- Set `defaultMonth={date || new Date()}` to show:
+  - The month of the selected date (if one exists)
+  - The current month (if no date is selected)
+
+**Code Changes**:
+```typescript
+// Before: Calendar always opened to current month
+<Calendar
+  mode="single"
+  selected={date}
+  onSelect={onDateChange}
+  disabled={disabled}
+  fromDate={fromDate}
+  toDate={toDate}
+  initialFocus
+/>
+
+// After: Calendar opens to the month of selected date
+<Calendar
+  mode="single"
+  selected={date}
+  onSelect={onDateChange}
+  disabled={disabled}
+  fromDate={fromDate}
+  toDate={toDate}
+  defaultMonth={date || new Date()}
+  initialFocus
+/>
+```
+
+**User Benefits**:
+- Faster date adjustments - no need to navigate to the correct month
+- More intuitive behavior - calendar shows the context of the selected date
+- Reduces clicks when fine-tuning dates
+- Consistent with user expectations
+
+**Files Modified**:
+- `src/components/ui/date-picker.tsx`
+
+---
+
+#### 3. **Save Changes Button for Itinerary Editing** ✅
 
 **Issue**: Itinerary changes were automatically saved on blur (when user clicked outside the textarea). This behavior was not transparent and users couldn't control when to save changes.
 
@@ -143,10 +193,11 @@ const hasUnsavedChanges = itineraryText !== previousTextRef.current;
 
 ### Summary of Changes
 
-Both improvements enhance user control and clarity:
+All three improvements enhance user control and clarity:
 
-1. **Date Selection**: Smarter pre-population reduces clicks and improves workflow
-2. **Itinerary Editing**: Explicit save button gives users control and transparency
+1. **Date Selection Pre-population**: Smarter pre-population reduces clicks and improves workflow
+2. **Date Picker Calendar Context**: Calendar opens to the selected date's month for faster editing
+3. **Itinerary Editing**: Explicit save button gives users control and transparency
 
 ### Testing Recommendations
 
@@ -160,7 +211,14 @@ Both improvements enhance user control and clarity:
    - Verify validation still works correctly
    - Test that latest date updates when earliest date changes (while flexible is ON)
 
-2. **Save Changes Button**:
+2. **Date Picker Calendar Month**:
+   - Select a date in April → Close picker → Reopen picker → Verify it shows April
+   - Select a date in December → Close picker → Reopen picker → Verify it shows December
+   - Test with no date selected → Verify it shows current month
+   - Test with various future months
+   - Test with earliest and latest date pickers
+
+3. **Save Changes Button**:
    - Test that button only appears when Edit switch is on
    - Test button is disabled when no changes made
    - Test button is disabled during save operation
@@ -174,6 +232,8 @@ Both improvements enhance user control and clarity:
 ```
 src/
 ├── components/
+│   ├── ui/
+│   │   └── date-picker.tsx           # Calendar opens to selected month
 │   └── trip-notes/
 │       ├── NoteForm.tsx              # Latest start date pre-population
 │       └── ItineraryForm.tsx         # Save changes button

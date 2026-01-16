@@ -49,6 +49,7 @@ export function DatePicker({
           disabled={disabled}
           fromDate={fromDate}
           toDate={toDate}
+          defaultMonth={date || new Date()}
           initialFocus
         />
       </PopoverContent>
