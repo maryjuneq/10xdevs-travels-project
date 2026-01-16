@@ -261,6 +261,24 @@ src/
    - **Files Modified**:
      - `src/components/TripNoteDetailPage.tsx` - Added ref for shouldGenerateAfterSave, read from ref in handleSaveNote
 
+4. **React Hydration Warning - Nested `<p>` Tags** - FIXED
+   - **Problem**: Console showed hydration errors: "In HTML, `<p>` cannot be a descendant of `<p>`"
+   - **Root Cause**: 
+     - Shadcn's `DialogDescription` component renders as a `<p>` tag by default
+     - We were placing `<p>` elements inside it, creating invalid nested `<p>` tags
+     - HTML spec doesn't allow `<p>` tags to contain block-level elements like other `<p>` tags
+   - **Solution**: 
+     - Added `asChild` prop to `DialogDescription` to prevent it from rendering its own wrapper
+     - Replaced all `<p>` tags inside DialogDescription with `<div>` tags
+     - This creates valid HTML structure without nesting issues
+   - **Why It Matters**: 
+     - Prevents hydration mismatches in React
+     - Improves accessibility for screen readers
+     - Avoids unpredictable browser behavior (browsers auto-close `<p>` tags when encountering nested ones)
+   - **Result**: No more console warnings, valid HTML structure
+   - **Files Modified**:
+     - `src/components/trip-notes/GenerationModal.tsx` - Fixed DialogDescription markup
+
 ### Changes Summary
 - ✅ Form submission now working correctly
 - ✅ User feedback via toast notifications implemented
@@ -269,6 +287,7 @@ src/
 - ✅ Number input spinners now visible (Chrome/Safari/Edge)
 - ✅ Save button correctly updates notes instead of creating duplicates
 - ✅ "Generate after save" toggle now works correctly (fixed stale closure)
+- ✅ Fixed React hydration warnings (no more nested `<p>` tags)
 
 ## Next Steps
 1. Add integration tests for the complete user flow

@@ -72,18 +72,18 @@ export function GenerationModal({ open, error, onClose }: GenerationModalProps) 
               </>
             )}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription asChild>
             {error ? (
               <div className="space-y-2">
-                <p className="text-destructive">{error}</p>
-                <p className="text-sm">Please try again or adjust your trip details.</p>
+                <div className="text-destructive">{error}</div>
+                <div className="text-sm">Please try again or adjust your trip details.</div>
               </div>
             ) : (
               <div className="space-y-2">
-                <p>Our AI is crafting a personalized travel plan based on your preferences...</p>
-                <p className="text-sm text-muted-foreground">
+                <div>Our AI is crafting a personalized travel plan based on your preferences...</div>
+                <div className="text-sm text-muted-foreground">
                   This usually takes 20-45 seconds. Elapsed time: <span className="font-mono">{elapsedTime}</span>
-                </p>
+                </div>
               </div>
             )}
           </DialogDescription>
@@ -96,9 +96,9 @@ export function GenerationModal({ open, error, onClose }: GenerationModalProps) 
               <div className="h-2 bg-secondary rounded-full overflow-hidden">
                 <div className="h-full bg-primary animate-pulse w-full" style={{ animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" }} />
               </div>
-              <p className="text-xs text-center text-muted-foreground">
+              <div className="text-xs text-center text-muted-foreground">
                 Please do not close this window or navigate away
-              </p>
+              </div>
             </div>
           </div>
         )}
