@@ -202,7 +202,6 @@ export function NoteForm({ initialValues, onSubmit, disabled = false, children, 
               disabled={disabled}
               aria-invalid={errors.groupSize ? "true" : "false"}
               aria-describedby={errors.groupSize ? "group-size-error" : undefined}
-              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-auto [&::-webkit-inner-spin-button]:appearance-auto"
             />
             {errors.groupSize && (
               <p id="group-size-error" className="text-sm text-destructive">
@@ -224,7 +223,6 @@ export function NoteForm({ initialValues, onSubmit, disabled = false, children, 
               disabled={disabled}
               aria-invalid={errors.approximateTripLength ? "true" : "false"}
               aria-describedby={errors.approximateTripLength ? "trip-length-error" : undefined}
-              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-auto [&::-webkit-inner-spin-button]:appearance-auto"
             />
             {errors.approximateTripLength && (
               <p id="trip-length-error" className="text-sm text-destructive">

@@ -28,6 +28,16 @@ function TripNoteDetailPageContent({ id }: TripNoteDetailPageProps) {
   const noteId = parseInt(id, 10);
   const isNewNote = isNaN(noteId) || noteId === 0;
 
+  // Local state - must be defined BEFORE useTripNote hook
+  const [shouldGenerateAfterSave, setShouldGenerateAfterSave] = React.useState(false);
+  const [generationState, setGenerationState] = React.useState<GenerationState>({
+    isGenerating: false,
+    error: undefined,
+  });
+  const [currentNoteId, setCurrentNoteId] = React.useState<number | null>(isNewNote ? null : noteId);
+  const [isDirty, setIsDirty] = React.useState(false);
+
+  // Use currentNoteId for the hook so it updates when note is created
   const {
     data: tripNote,
     isLoading,
@@ -40,16 +50,7 @@ function TripNoteDetailPageContent({ id }: TripNoteDetailPageProps) {
     isUpdatingItinerary,
     saveError,
     generateError,
-  } = useTripNote(isNewNote ? 0 : noteId);
-
-  // Local state
-  const [shouldGenerateAfterSave, setShouldGenerateAfterSave] = React.useState(false);
-  const [generationState, setGenerationState] = React.useState<GenerationState>({
-    isGenerating: false,
-    error: undefined,
-  });
-  const [currentNoteId, setCurrentNoteId] = React.useState<number | null>(isNewNote ? null : noteId);
-  const [isDirty, setIsDirty] = React.useState(false);
+  } = useTripNote(currentNoteId || 0);
 
   // Warn user about unsaved changes
   useUnsavedPrompt(isDirty && !isSaving);

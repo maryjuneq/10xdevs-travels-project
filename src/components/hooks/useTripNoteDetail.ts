@@ -154,10 +154,23 @@ export function useUpdateItinerary(tripNoteId: number) {
  * @returns Combined query and mutation operations
  */
 export function useTripNote(id: number) {
+  const queryClient = useQueryClient();
   const query = useTripNoteQuery(id);
   const createMutation = useCreateTripNote();
   const updateMutation = useUpdateTripNote(id);
-  const generateMutation = useGenerateItinerary(id);
+  
+  // We need a general generate mutation that can work with any ID
+  const generateMutationBase = useMutation({
+    mutationFn: ({ noteId, command }: { noteId: number; command: CreateTripNoteCommand }) => 
+      generateItinerary(noteId, command),
+    onSuccess: (data, variables) => {
+      // Update the detail cache with the new data including the itinerary
+      queryClient.setQueryData(tripNoteKeys.detail(variables.noteId), data);
+      // Invalidate lists to update hasItinerary flag on dashboard
+      queryClient.invalidateQueries({ queryKey: tripNoteKeys.lists() });
+    },
+  });
+  
   const updateItineraryMutation = useUpdateItinerary(id);
 
   return {
@@ -175,7 +188,7 @@ export function useTripNote(id: number) {
       }
     },
     generate: async (noteId: number, command: CreateTripNoteCommand): Promise<TripNoteWithItineraryDTO> => {
-      return generateMutation.mutateAsync(command);
+      return generateMutationBase.mutateAsync({ noteId, command });
     },
     updateItinerary: async (itineraryId: number, text: string): Promise<ItineraryDTO> => {
       return updateItineraryMutation.mutateAsync({ itineraryId, text });
@@ -183,12 +196,12 @@ export function useTripNote(id: number) {
 
     // Mutation states
     isSaving: createMutation.isPending || updateMutation.isPending,
-    isGenerating: generateMutation.isPending,
+    isGenerating: generateMutationBase.isPending,
     isUpdatingItinerary: updateItineraryMutation.isPending,
 
     // Error states
     saveError: (createMutation.error || updateMutation.error) as Error | undefined,
-    generateError: generateMutation.error as Error | undefined,
+    generateError: generateMutationBase.error as Error | undefined,
     updateItineraryError: updateItineraryMutation.error as Error | undefined,
   };
 }

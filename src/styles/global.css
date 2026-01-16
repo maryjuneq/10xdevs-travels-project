@@ -117,4 +117,11 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Ensure number input spinners are visible in Chrome/Safari/Edge */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1;
+    height: 2rem;
+  }
 }

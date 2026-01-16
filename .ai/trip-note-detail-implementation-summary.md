@@ -206,38 +206,57 @@ src/
      - Generation errors show in modal first, then toast when dismissed
      - Modal gains close button when error occurs
 
-#### Outstanding Issues ⚠️
+#### Fixed Issues ✅
 
-1. **Number Input Spinners Not Showing**
-   - **Problem**: Group Size and Trip Length fields don't show increment/decrement arrows
-   - **Expected**: Native browser number input spinners (up/down arrows) should be visible
-   - **Attempted Fix**: Added Tailwind classes to force appearance:
-     ```typescript
-     className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-auto [&::-webkit-inner-spin-button]:appearance-auto"
-     ```
-   - **Result**: Still not working - arrows not visible
-   - **Fields Affected**:
-     - Group Size input (line ~196 in NoteForm.tsx)
-     - Approximate Trip Length input (line ~217 in NoteForm.tsx)
-   - **Investigation Needed**:
-     - Check if Tailwind CSS is stripping these pseudo-elements
-     - Consider creating custom increment/decrement buttons instead
-     - May need to check browser-specific CSS that's hiding spinners
-     - Alternative: Use a different component (e.g., Shadcn NumberInput if available, or custom stepper component)
-   - **Workaround for Users**: Can still type numbers directly and use keyboard up/down arrows when focused
+1. **Number Input Spinners Not Showing** - FIXED
+   - **Problem**: Group Size and Trip Length fields didn't show increment/decrement arrows
+   - **Root Cause**: The `[appearance:textfield]` CSS class was explicitly hiding the spinners
+   - **Solution**: 
+     - Removed problematic Tailwind classes from number inputs
+     - Added global CSS to ensure webkit spinners are visible:
+       ```css
+       input[type="number"]::-webkit-inner-spin-button,
+       input[type="number"]::-webkit-outer-spin-button {
+         opacity: 1;
+         height: 2rem;
+       }
+       ```
+   - **Result**: Spinners now visible in Chrome, Safari, Edge
+   - **Note**: Firefox doesn't support native number input spinners (browser limitation), users can still type numbers or use keyboard up/down arrows
+   - **Files Modified**:
+     - `src/components/trip-notes/NoteForm.tsx` - Removed conflicting CSS classes
+     - `src/styles/global.css` - Added explicit spinner visibility rules
+
+2. **Duplicate Note Error After First Save** - FIXED
+   - **Problem**: After creating a new note, clicking save again would try to create a duplicate note instead of updating the existing one
+   - **Error Message**: `duplicate key value violates unique constraint "unique_user_destination_date"`
+   - **Root Cause**: 
+     - The `useTripNote` hook was initialized once with `id: 0` for new notes
+     - After successful creation, `currentNoteId` state was updated in the component
+     - But the hook still had `id: 0`, so `save()` always called `createMutation`
+   - **Solution**:
+     - Pass `currentNoteId` to the hook instead of the initial `noteId`
+     - Hook now receives the updated ID after note creation
+     - The `save()` function correctly chooses between create (id === 0) and update (id > 0)
+     - Also fixed `generate()` to use the dynamically passed `noteId` parameter
+   - **Result**: Save button now correctly updates existing notes instead of trying to create duplicates
+   - **Files Modified**:
+     - `src/components/TripNoteDetailPage.tsx` - Pass `currentNoteId` to hook
+     - `src/components/hooks/useTripNoteDetail.ts` - Created flexible generate mutation that accepts noteId as parameter
 
 ### Changes Summary
 - ✅ Form submission now working correctly
 - ✅ User feedback via toast notifications implemented
 - ✅ Generation toggle appears after first save
 - ✅ Clear error messages for all operations
-- ⚠️ Number input spinners still need fixing
+- ✅ Number input spinners now visible (Chrome/Safari/Edge)
+- ✅ Save button correctly updates notes instead of creating duplicates
 
 ## Next Steps
-1. **FIX: Number input spinners** - Investigate why CSS classes aren't showing spinners
-2. Add integration tests for the complete user flow
-3. Add unit tests for hooks and components
-4. Test with actual backend API endpoints
-5. Add loading skeletons for better perceived performance
-6. Add keyboard shortcuts for common actions (Ctrl+S to save)
+1. Add integration tests for the complete user flow
+2. Add unit tests for hooks and components
+3. Test with actual backend API endpoints
+4. Add loading skeletons for better perceived performance
+5. Add keyboard shortcuts for common actions (Ctrl+S to save)
+6. Consider adding custom stepper buttons for Firefox users (optional enhancement)
 
