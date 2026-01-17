@@ -136,7 +136,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
       if (existing) {
         // Regenerate scenario – overwrite text and set manuallyEdited = false
-        itinerary = await ItinerariesService.update(existing.id, aiResult.itinerary, false, supabase);
+        itinerary = await ItinerariesService.update(
+          existing.id,
+          aiResult.itinerary,
+          false,
+          supabase,
+          aiResult.suggestedTripLength,
+          aiResult.suggestedBudget
+        );
       } else {
         // First-time generation
         itinerary = await ItinerariesService.create(
@@ -144,7 +151,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
           aiResult.itinerary,
           userId,
           supabase,
-          aiResult.suggestedTripLength
+          aiResult.suggestedTripLength,
+          aiResult.suggestedBudget
         );
       }
     } catch (error: any) {
@@ -174,8 +182,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const lightItineraryDTO = {
       id: itinerary.id,
       suggestedTripLength: itinerary.suggestedTripLength,
+      suggestedBudget: itinerary.suggestedBudget,
       itinerary: itinerary.itinerary,
-      ...(aiResult.suggestedBudget !== undefined && { suggestedBudget: aiResult.suggestedBudget }), // Include only if AI provided it
     };
 
     // Combine updated trip note with generated itinerary

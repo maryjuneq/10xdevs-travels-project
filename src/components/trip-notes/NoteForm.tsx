@@ -35,6 +35,7 @@ const CURRENCIES = [
   { value: "CHF", label: "CHF - Swiss Franc" },
   { value: "CNY", label: "CNY - Chinese Yuan" },
   { value: "INR", label: "INR - Indian Rupee" },
+  { value: "PLN", label: "PLN - Polish Zloty" },
 ];
 
 export function NoteForm({ initialValues, onSubmit, disabled = false, children, onDirtyChange }: NoteFormProps) {

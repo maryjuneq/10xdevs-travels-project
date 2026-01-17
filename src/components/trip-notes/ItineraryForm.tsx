@@ -70,13 +70,18 @@ export function ItineraryForm({ itinerary, onUpdate, disabled = false }: Itinera
 
   return (
     <div className="flex flex-col h-full p-6 space-y-4">
-      {/* Header with Suggested Trip Length */}
+      {/* Header with Suggested Trip Length and Budget */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Label className="text-base font-semibold">Generated Itinerary</Label>
-          {itinerary.suggestedTripLength && (
+          {itinerary.suggestedTripLength && itinerary.suggestedTripLength > 0 && (
             <Badge variant="secondary">
               {itinerary.suggestedTripLength} {itinerary.suggestedTripLength === 1 ? "day" : "days"}
+            </Badge>
+          )}
+          {itinerary.suggestedBudget && itinerary.suggestedBudget.trim() !== "" && (
+            <Badge variant="outline">
+              {itinerary.suggestedBudget}
             </Badge>
           )}
         </div>

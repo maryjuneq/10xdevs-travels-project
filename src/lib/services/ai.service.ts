@@ -15,7 +15,7 @@ import type { TripNoteDTO, UserPreferenceDTO } from "../../types";
 const AIItineraryResponseSchema = z.object({
   itinerary: z.string().min(10, "Itinerary must be at least 10 characters"),
   suggestedTripLength: z.number().int().positive("Trip length must be a positive integer").optional(),
-  suggestedBudget: z.number().positive("Budget must be a positive number").optional(),
+  suggestedBudget: z.string().min(1).optional(),
 });
 
 /**
@@ -30,7 +30,7 @@ export interface AIGenerationResult {
   itinerary: string;
   durationMs: number;
   suggestedTripLength?: number;
-  suggestedBudget?: number;
+  suggestedBudget?: string;
 }
 
 /**
@@ -51,7 +51,7 @@ export class AIService {
       apiKey,
       defaultModel: 'openai/gpt-oss-120b:free',
       defaultTemperature: 0.7,
-      timeout: 60000, // 60 seconds
+      timeout: 90000, // 90 seconds
       maxRetries: 3,
     });
   }
@@ -153,7 +153,8 @@ export class AIService {
         : "";
 
     // Calculate suggested budget (mock logic)
-    const suggestedBudget = budgetAmount || (approximateTripLength * 150); // Default $150/day if not provided
+    const budgetValue = budgetAmount || (approximateTripLength * 150); // Default $150/day if not provided
+    const suggestedBudget = `${budgetValue} ${currency || "USD"}`;
 
     // Generate mock itinerary text
     const itinerary = `# ${approximateTripLength}-Day Itinerary for ${destination}
@@ -266,6 +267,6 @@ Assess if the budget suggested by the user is realistic based on destination and
 Format the response in JSON, providing the following fields:
 - itinerary: string (comprehensive day-by-day itinerary in Markdown format with daily breakdown, accommodations, dining, transportation, etc.)
 - suggestedTripLength: number (realistic trip length in days based on your assessment)
-- suggestedBudget: number (realistic budget per person in the currency provided or USD if not specified)`;
+- suggestedBudget: string (realistic budget per person in the currency provided or USD if not specified)`;
   }
 }

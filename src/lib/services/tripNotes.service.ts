@@ -80,6 +80,7 @@ function itineraryToLightDTO(data: any): LightItineraryDTO {
   return {
     id: data.id,
     suggestedTripLength: data.suggested_trip_length,
+    suggestedBudget: data.suggested_budget,
     itinerary: data.itinerary,
   };
 }
@@ -205,7 +206,7 @@ export class TripNotesService {
     }
 
     // Transform command to update format
-    const updateData = commandToInsert(command, userId);
+    const updateData = commandToUpdate(command);
 
     // Update in database
     const { data, error } = await supabase.from("trip_notes").update(updateData).eq("id", id).select().single();
@@ -270,6 +271,7 @@ export class TripNotesService {
         itineraries (
           id,
           suggested_trip_length,
+          suggested_budget,
           itinerary
         )
       `
@@ -397,7 +399,7 @@ export class TripNotesService {
     // Fetch itinerary for the updated trip note
     const { data: itinerary, error: itineraryError } = await supabase
       .from("itineraries")
-      .select("id, suggested_trip_length, itinerary")
+      .select("id, suggested_trip_length, suggested_budget, itinerary")
       .eq("trip_note_id", id)
       .maybeSingle();
 

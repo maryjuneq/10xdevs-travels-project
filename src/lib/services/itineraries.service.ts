@@ -18,6 +18,7 @@ function entityToDTO(entity: ItineraryEntity): ItineraryDTO {
     id: entity.id,
     tripNoteId: entity.trip_note_id,
     suggestedTripLength: entity.suggested_trip_length,
+    suggestedBudget: entity.suggested_budget,
     itinerary: entity.itinerary,
     manuallyEdited: entity.manually_edited,
     createdAt: entity.created_at,
@@ -38,6 +39,7 @@ export class ItinerariesService {
    * @param userId - Authenticated user ID
    * @param supabase - Supabase client instance
    * @param suggestedTripLength - Optional suggested trip length from AI
+   * @param suggestedBudget - Optional suggested budget from AI (string with currency)
    * @returns Promise<ItineraryDTO> - The created itinerary in DTO format
    * @throws InternalServerError if database operation fails
    */
@@ -46,7 +48,8 @@ export class ItinerariesService {
     itinerary: string,
     userId: string,
     supabase: SupabaseClient,
-    suggestedTripLength?: number | null
+    suggestedTripLength?: number | null,
+    suggestedBudget?: string | null
   ): Promise<ItineraryDTO> {
     // Prepare insert data
     const insertData: TablesInsert<"itineraries"> = {
@@ -54,6 +57,7 @@ export class ItinerariesService {
       itinerary,
       user_id: userId,
       suggested_trip_length: suggestedTripLength ?? null,
+      suggested_budget: suggestedBudget ?? null,
     };
 
     // Insert into database with RETURNING clause
@@ -101,12 +105,37 @@ export class ItinerariesService {
    *
    * @param id - Itinerary ID
    * @param itinerary - Updated itinerary text
+   * @param manuallyEdited - Whether the itinerary was manually edited
    * @param supabase - Supabase client instance
+   * @param suggestedTripLength - Optional suggested trip length from AI
+   * @param suggestedBudget - Optional suggested budget from AI
    * @returns Promise<ItineraryDTO> - The updated itinerary in DTO format
    * @throws InternalServerError if database operation fails
    */
-  static async update(id: number, itinerary: string, manuallyEdited: boolean, supabase: SupabaseClient): Promise<ItineraryDTO> {
-    const { data, error } = await supabase.from("itineraries").update({ itinerary, manually_edited: manuallyEdited }).eq("id", id).select().single();
+  static async update(
+    id: number,
+    itinerary: string,
+    manuallyEdited: boolean,
+    supabase: SupabaseClient,
+    suggestedTripLength?: number | null,
+    suggestedBudget?: string | null
+  ): Promise<ItineraryDTO> {
+    const updateData: any = {
+      itinerary,
+      manually_edited: manuallyEdited,
+    };
+
+    // Only update suggestedTripLength if provided
+    if (suggestedTripLength !== undefined) {
+      updateData.suggested_trip_length = suggestedTripLength;
+    }
+
+    // Only update suggestedBudget if provided
+    if (suggestedBudget !== undefined) {
+      updateData.suggested_budget = suggestedBudget;
+    }
+
+    const { data, error } = await supabase.from("itineraries").update(updateData).eq("id", id).select().single();
 
     if (error) {
       console.error("Database error updating itinerary:", error);

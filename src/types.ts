@@ -117,7 +117,7 @@ export type UpdateTripNoteCommand = CreateTripNoteCommand;
  * Used in GET /api/trip-notes/{id}
  * Excludes timestamps and redundant tripNoteId for efficiency
  */
-export type LightItineraryDTO = Pick<ItineraryDTO, "id" | "suggestedTripLength" | "itinerary">;
+export type LightItineraryDTO = Pick<ItineraryDTO, "id" | "suggestedTripLength" | "suggestedBudget" | "itinerary">;
 
 /**
  * DTO for Trip Note with embedded itinerary
@@ -141,6 +141,7 @@ export interface ItineraryDTO {
   id: number;
   tripNoteId: number;
   suggestedTripLength: number | null;
+  suggestedBudget: string | null;
   itinerary: string;
   manuallyEdited: boolean;
   createdAt: string;
