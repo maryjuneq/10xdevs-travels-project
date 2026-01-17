@@ -175,6 +175,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       id: itinerary.id,
       suggestedTripLength: itinerary.suggestedTripLength,
       itinerary: itinerary.itinerary,
+      ...(aiResult.suggestedBudget !== undefined && { suggestedBudget: aiResult.suggestedBudget }), // Include only if AI provided it
     };
 
     // Combine updated trip note with generated itinerary

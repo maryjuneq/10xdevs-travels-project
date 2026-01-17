@@ -1,10 +1,27 @@
 /**
  * AI Service
  * Handles AI-powered itinerary generation using OpenRouter API
- * Currently using MOCK implementation for development
  */
 
+import { z } from 'zod';
+import { OpenRouterService } from '../openrouter';
 import type { TripNoteDTO, UserPreferenceDTO } from "../../types";
+
+/**
+ * Zod schema for AI-generated itinerary response
+ * Validates the structured JSON response from the AI model
+ * Note: suggestedTripLength and suggestedBudget are optional - AI may not always provide them
+ */
+const AIItineraryResponseSchema = z.object({
+  itinerary: z.string().min(10, "Itinerary must be at least 10 characters"),
+  suggestedTripLength: z.number().int().positive("Trip length must be a positive integer").optional(),
+  suggestedBudget: z.number().positive("Budget must be a positive number").optional(),
+});
+
+/**
+ * Type inference from the AI response schema
+ */
+type AIItineraryResponse = z.infer<typeof AIItineraryResponseSchema>;
 
 /**
  * Result returned from AI generation
@@ -12,7 +29,8 @@ import type { TripNoteDTO, UserPreferenceDTO } from "../../types";
 export interface AIGenerationResult {
   itinerary: string;
   durationMs: number;
-  suggestedTripLength?: number | null;
+  suggestedTripLength?: number;
+  suggestedBudget?: number;
 }
 
 /**
@@ -20,42 +38,92 @@ export interface AIGenerationResult {
  * Provides methods for AI-powered itinerary generation
  */
 export class AIService {
+  private static openRouterService: OpenRouterService | null = null;
+
+  /**
+   * Initializes the OpenRouter service with API key
+   * Call this once at application startup
+   * 
+   * @param apiKey - OpenRouter API key
+   */
+  static initialize(apiKey: string): void {
+    this.openRouterService = new OpenRouterService({
+      apiKey,
+      defaultModel: 'openai/gpt-oss-120b:free',
+      defaultTemperature: 0.7,
+      timeout: 60000, // 60 seconds
+      maxRetries: 3,
+    });
+  }
+
+  /**
+   * Gets the OpenRouter service instance
+   * 
+   * @returns OpenRouterService instance
+   * @throws Error if service is not initialized
+   */
+  private static getService(): OpenRouterService {
+    if (!this.openRouterService) {
+      throw new Error('AIService not initialized. Call AIService.initialize() first.');
+    }
+    return this.openRouterService;
+  }
+
   /**
    * Generates a travel itinerary based on trip note and user preferences
    *
-   * MOCK IMPLEMENTATION: Returns simulated itinerary for development
-   * TODO: Replace with actual OpenRouter API integration
-   *
    * @param tripNote - The trip note data (destination, dates, budget, etc.)
    * @param preferences - User's saved travel preferences
+   * @param useMock - If true, returns mock data; if false, uses real OpenRouter API
    * @returns Promise<AIGenerationResult> - Generated itinerary with metadata
    * @throws Error if generation fails
    */
-  static async generateItinerary(tripNote: TripNoteDTO, preferences: UserPreferenceDTO[]): Promise<AIGenerationResult> {
+  static async generateItinerary(
+    tripNote: TripNoteDTO, 
+    preferences: UserPreferenceDTO[],
+    useMock = false
+  ): Promise<AIGenerationResult> {
     const startTime = performance.now();
 
     try {
-      // MOCK: Simulate API latency (2-4 seconds)
-      const mockLatency = Math.random() * 2000 + 2000;
-      await new Promise((resolve) => setTimeout(resolve, mockLatency));
+      // Use mock implementation if requested or service not initialized
+      if (useMock || !this.openRouterService) {
+        return await this.generateMockItinerary(tripNote, preferences, startTime);
+      }
 
-      // Build mock itinerary based on trip note data
-      const itinerary = this.generateMockItinerary(tripNote, preferences);
+      // Build prompt for AI
+      const prompt = this.buildPrompt(tripNote, preferences);
+
+      // Call OpenRouter API with structured response schema
+      const service = this.getService();
+      const response = await service.chat({
+        system: 'You are a professional travel planner. Generate detailed, practical, and personalized travel itineraries. Always respond with valid JSON matching the requested schema.',
+        messages: [
+          { role: 'user', content: prompt }
+        ],
+        responseSchema: AIItineraryResponseSchema,
+        temperature: 0.7,
+        max_tokens: 4000,
+      });
 
       const endTime = performance.now();
       const durationMs = Math.round(endTime - startTime);
 
+      // Extract validated JSON response
+      const aiResponse = response.json as AIItineraryResponse;
+
       return {
-        itinerary,
+        itinerary: aiResponse.itinerary,
         durationMs,
-        suggestedTripLength: tripNote.approximateTripLength,
+        suggestedTripLength: aiResponse.suggestedTripLength,
+        suggestedBudget: aiResponse.suggestedBudget,
       };
     } catch (error) {
       const endTime = performance.now();
       const durationMs = Math.round(endTime - startTime);
 
       console.error("AI generation error:", error);
-      throw new Error(`AI generation failed after ${durationMs}ms: ${error}`);
+      throw new Error(`AI generation failed after ${durationMs}ms: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -64,9 +132,18 @@ export class AIService {
    *
    * @param tripNote - Trip note data
    * @param preferences - User preferences
-   * @returns string - Formatted mock itinerary
+   * @param startTime - Start time for duration calculation
+   * @returns Promise<AIGenerationResult> - Mock result with itinerary
    */
-  private static generateMockItinerary(tripNote: TripNoteDTO, preferences: UserPreferenceDTO[]): string {
+  private static async generateMockItinerary(
+    tripNote: TripNoteDTO, 
+    preferences: UserPreferenceDTO[],
+    startTime: number
+  ): Promise<AIGenerationResult> {
+    // MOCK: Simulate API latency (2-4 seconds)
+    const mockLatency = Math.random() * 2000 + 2000;
+    await new Promise((resolve) => setTimeout(resolve, mockLatency));
+
     const { destination, groupSize, approximateTripLength, budgetAmount, currency, details } = tripNote;
 
     // Build preference summary
@@ -75,8 +152,11 @@ export class AIService {
         ? `\n\nYour preferences:\n${preferences.map((p) => `- ${p.category}: ${p.preferenceText}`).join("\n")}`
         : "";
 
+    // Calculate suggested budget (mock logic)
+    const suggestedBudget = budgetAmount || (approximateTripLength * 150); // Default $150/day if not provided
+
     // Generate mock itinerary text
-    return `# ${approximateTripLength}-Day Itinerary for ${destination}
+    const itinerary = `# ${approximateTripLength}-Day Itinerary for ${destination}
 
 ## Trip Overview
 - **Group Size:** ${groupSize} ${groupSize === 1 ? "person" : "people"}
@@ -108,6 +188,16 @@ ${
 
 ---
 *This is a MOCK itinerary generated for development purposes.*`;
+
+    const endTime = performance.now();
+    const durationMs = Math.round(endTime - startTime);
+
+    return {
+      itinerary,
+      durationMs,
+      suggestedTripLength: approximateTripLength,
+      suggestedBudget,
+    };
   }
 
   /**
@@ -142,7 +232,7 @@ ${dayParts.map((part) => `**${part}:** ${activity}`).join("\n")}
   }
 
   /**
-   * Builds a prompt for the AI model (for future implementation)
+   * Builds a prompt for the AI model
    *
    * @param tripNote - Trip note data
    * @param preferences - User preferences
@@ -158,10 +248,10 @@ ${dayParts.map((part) => `**${part}:** ${activity}`).join("\n")}
 
 Destination: ${tripNote.destination}
 Travel Dates: Between ${tripNote.earliestStartDate} and ${tripNote.latestStartDate}
-Duration: ${tripNote.approximateTripLength} days
+Duration suggested by the user: ${tripNote.approximateTripLength} days
 Group Size: ${tripNote.groupSize} ${tripNote.groupSize === 1 ? "person" : "people"}
-${tripNote.budgetAmount ? `Budget: ${tripNote.budgetAmount} ${tripNote.currency || "USD"} per person` : ""}
-${tripNote.details ? `Additional Details: ${tripNote.details}` : ""}
+${tripNote.budgetAmount ? `Budget suggested by the user: ${tripNote.budgetAmount} ${tripNote.currency || "USD"} per person` : "Budget: Not provided by the user"}
+Details from the user: ${tripNote.details}
 ${prefText}
 
 Please provide a comprehensive day-by-day itinerary including:
@@ -169,9 +259,13 @@ Please provide a comprehensive day-by-day itinerary including:
 - Recommended accommodations
 - Dining suggestions
 - Transportation options
-- Budget breakdown
-- Travel tips
 
-Format the response in Markdown.`;
+Assess if the trip length suggested by the user is realistic based on destination and preferences provided in details and user preferences. Suggest a more realistic trip length if it is not.
+Assess if the budget suggested by the user is realistic based on destination and preferences provided in details and user preferences. Suggest a more realistic budget if it is not. In case budget was not provided by the user, suggest a budget based on destination and preferences provided in details and user preferences.
+
+Format the response in JSON, providing the following fields:
+- itinerary: string (comprehensive day-by-day itinerary in Markdown format with daily breakdown, accommodations, dining, transportation, etc.)
+- suggestedTripLength: number (realistic trip length in days based on your assessment)
+- suggestedBudget: number (realistic budget per person in the currency provided or USD if not specified)`;
   }
 }
