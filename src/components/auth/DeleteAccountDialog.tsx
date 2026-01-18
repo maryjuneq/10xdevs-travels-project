@@ -25,7 +25,8 @@ export function DeleteAccountDialog({ trigger, onConfirm }: DeleteAccountDialogP
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string>("");
 
-  const handleConfirm = () => {
+  const handleConfirm = (e: React.MouseEvent) => {
+    e.preventDefault();
     startTransition(async () => {
       try {
         setError("");
@@ -72,18 +73,18 @@ export function DeleteAccountDialog({ trigger, onConfirm }: DeleteAccountDialogP
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete your account?</AlertDialogTitle>
-          <AlertDialogDescription className="space-y-2">
-            <p>
-              This action cannot be undone. This will permanently delete your account and remove all your data from our
-              servers.
-            </p>
-            <p className="font-semibold text-destructive">
-              All your trip notes, itineraries, and preferences will be permanently deleted.
-            </p>
-            {error && (
-              <p className="text-sm text-destructive font-medium">{error}</p>
-            )}
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete your account and remove all your data from our
+            servers.
           </AlertDialogDescription>
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <div className="font-semibold text-destructive">
+              All your trip notes, itineraries, and preferences will be permanently deleted.
+            </div>
+            {error && (
+              <div className="text-sm text-destructive font-medium">{error}</div>
+            )}
+          </div>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>

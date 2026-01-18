@@ -6,14 +6,18 @@
 import { QueryClientProvider } from "./QueryClientProvider";
 import { DashboardView } from "./DashboardView";
 
+interface DashboardProps {
+  userEmail: string;
+}
+
 /**
  * Main Dashboard component that includes the QueryClient provider
  * This ensures DashboardView has access to the React Query context
  */
-export function Dashboard() {
+export function Dashboard({ userEmail }: DashboardProps) {
   return (
     <QueryClientProvider>
-      <DashboardView />
+      <DashboardView userEmail={userEmail} />
     </QueryClientProvider>
   );
 }

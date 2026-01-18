@@ -29,7 +29,7 @@ function TripNoteDetailPageContent({ id }: TripNoteDetailPageProps) {
   const isNewNote = isNaN(noteId) || noteId === 0;
 
   // Local state - must be defined BEFORE useTripNote hook
-  const [shouldGenerateAfterSave, setShouldGenerateAfterSave] = React.useState(true);
+  const [shouldGenerateAfterSave, setShouldGenerateAfterSave] = React.useState(!isNewNote);
   const [generationState, setGenerationState] = React.useState<GenerationState>({
     isGenerating: false,
     error: undefined,
@@ -121,6 +121,7 @@ function TripNoteDetailPageContent({ id }: TripNoteDetailPageProps) {
       // Update current note ID if this was a new note
       if (wasNewNote) {
         setCurrentNoteId(result.id);
+        setShouldGenerateAfterSave(true);
         // Redirect to the detail view with the new ID
         window.history.replaceState({}, "", `/trip-notes/${result.id}`);
         toast.success("Trip note created successfully!");

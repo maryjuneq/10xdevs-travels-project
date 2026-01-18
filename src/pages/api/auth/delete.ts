@@ -67,6 +67,21 @@ export const POST: APIRoute = async ({ locals }) => {
 
     if (deleteError) {
       console.error("Account deletion error:", deleteError);
+      
+      // Check if this is a JWT/authentication error with the service role key
+      if (deleteError.status === 403 || deleteError.code === 'bad_jwt') {
+        console.error("Invalid SUPABASE_SERVICE_ROLE_KEY - key doesn't match the Supabase instance");
+        return new Response(
+          JSON.stringify({
+            error: "Server configuration error. Please contact support or check your environment variables.",
+          }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+      
       return new Response(
         JSON.stringify({
           error: "Failed to delete account. Please try again.",

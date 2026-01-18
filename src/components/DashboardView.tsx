@@ -17,11 +17,15 @@ import {
 import { DeleteAccountDialog } from "./auth";
 import type { TripNotesListQuery } from "../types";
 
+interface DashboardViewProps {
+  userEmail: string;
+}
+
 /**
  * Main Dashboard View Component
  * Manages state and coordinates all child components
  */
-export function DashboardView() {
+export function DashboardView({ userEmail }: DashboardViewProps) {
   const [filters, updateFilters] = useUrlFilters();
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
@@ -72,7 +76,7 @@ export function DashboardView() {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header with page title and action buttons */}
-      <DashboardHeader />
+      <DashboardHeader userEmail={userEmail} />
 
       {/* Filters and sort toolbar */}
       <TripNotesToolbar filters={filters} onFilterChange={handleFilterChange} />
@@ -114,12 +118,7 @@ export function DashboardView() {
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
             Permanently delete your account and all associated data
           </p>
-          <DeleteAccountDialog
-            onConfirm={() => {
-              // Will be implemented in backend phase
-              console.log("Delete account requested");
-            }}
-          />
+          <DeleteAccountDialog />
         </div>
       </footer>
     </div>
