@@ -5,7 +5,7 @@
  * PUT: Updates an existing trip note with full replacement semantics
  * DELETE: Deletes a trip note (and cascades to related itineraries and jobs)
  *
- * Authentication: Requires valid Supabase session (temporary fallback to DEFAULT_USER_ID)
+ * Authentication: Requires valid Supabase session
  * Authorization: Only allows operations on trip notes owned by the authenticated user
  */
 
@@ -13,7 +13,6 @@ import type { APIRoute } from "astro";
 import { TripNoteIdParamSchema } from "../../../lib/schemas/tripNoteIdParam.schema";
 import { UpdateTripNoteSchema } from "../../../lib/schemas/tripNote.schema";
 import { TripNotesService } from "../../../lib/services/tripNotes.service";
-import { DEFAULT_USER_ID } from "../../../db/supabase.client";
 import { NotFoundError, ForbiddenError, InternalServerError, ConflictError, ValidationError } from "../../../lib/errors";
 import { createErrorResponse, createJsonResponse, createNoContentResponse } from "../../../lib/httpHelpers";
 
@@ -28,16 +27,14 @@ import { createErrorResponse, createJsonResponse, createNoContentResponse } from
  */
 export const GET: APIRoute = async ({ params, locals }) => {
   try {
-    const { supabase } = locals;
-
-    // TODO: Once authentication is properly implemented, get session from locals
-    // For now, using DEFAULT_USER_ID for development
-    const userId = DEFAULT_USER_ID;
+    const { supabase, user } = locals;
 
     // Check for authentication
-    if (!userId) {
+    if (!user) {
       return createErrorResponse(401, "Unauthorized");
     }
+
+    const userId = user.id;
 
     // Validate path parameter with Zod
     const validationResult = TripNoteIdParamSchema.safeParse(params);
@@ -85,16 +82,14 @@ export const GET: APIRoute = async ({ params, locals }) => {
  */
 export const PUT: APIRoute = async ({ params, request, locals }) => {
   try {
-    const { supabase } = locals;
-
-    // TODO: Once authentication is properly implemented, get session from locals
-    // For now, using DEFAULT_USER_ID for development
-    const userId = DEFAULT_USER_ID;
+    const { supabase, user } = locals;
 
     // Check for authentication
-    if (!userId) {
+    if (!user) {
       return createErrorResponse(401, "Unauthorized");
     }
+
+    const userId = user.id;
 
     // Validate path parameter with Zod
     const paramValidation = TripNoteIdParamSchema.safeParse(params);
@@ -176,16 +171,14 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
  */
 export const DELETE: APIRoute = async ({ params, locals }) => {
   try {
-    const { supabase } = locals;
-
-    // TODO: Once authentication is properly implemented, get session from locals
-    // For now, using DEFAULT_USER_ID for development
-    const userId = DEFAULT_USER_ID;
+    const { supabase, user } = locals;
 
     // Check for authentication
-    if (!userId) {
+    if (!user) {
       return createErrorResponse(401, "Unauthorized");
     }
+
+    const userId = user.id;
 
     // Validate path parameter with Zod
     const validationResult = TripNoteIdParamSchema.safeParse(params);

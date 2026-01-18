@@ -251,7 +251,8 @@ Destination: ${tripNote.destination}
 Travel Dates: Between ${tripNote.earliestStartDate} and ${tripNote.latestStartDate}
 Duration suggested by the user: ${tripNote.approximateTripLength} days
 Group Size: ${tripNote.groupSize} ${tripNote.groupSize === 1 ? "person" : "people"}
-${tripNote.budgetAmount ? `Budget suggested by the user: ${tripNote.budgetAmount} ${tripNote.currency || "USD"} per person` : "Budget: Not provided by the user"}
+${tripNote.budgetAmount ? `Budget suggested by the user: ${tripNote.budgetAmount} ${tripNote.currency || "USD"} for group` : "Budget: Not provided by the user"}
+${tripNote.currency ? `Preferred currency: ${tripNote.currency}` : "Currency: Not provided by the user"}
 Details from the user: ${tripNote.details}
 ${prefText}
 
@@ -267,6 +268,6 @@ Assess if the budget suggested by the user is realistic based on destination and
 Format the response in JSON, providing the following fields:
 - itinerary: string (comprehensive day-by-day itinerary in Markdown format with daily breakdown, accommodations, dining, transportation, etc.)
 - suggestedTripLength: number (realistic trip length in days based on your assessment)
-- suggestedBudget: string (realistic budget per person in the currency provided or USD if not specified)`;
+- suggestedBudget: string (Realistic budget per whole group in the currency provided or USD if not specified. This should be a short string, just a number and currency, keep the details in itinerary field)`;
   }
 }

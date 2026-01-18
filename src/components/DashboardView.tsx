@@ -14,6 +14,7 @@ import {
   PaginationControls,
   DeleteTripNoteDialog,
 } from "./dashboard/index";
+import { DeleteAccountDialog } from "./auth";
 import type { TripNotesListQuery } from "../types";
 
 /**
@@ -105,6 +106,22 @@ export function DashboardView() {
         onConfirm={handleDeleteConfirm}
         isDeleting={deleteMutation.isPending}
       />
+
+      {/* Footer with danger zone */}
+      <footer className="mt-16 border-t border-gray-200 dark:border-gray-700 pt-8">
+        <div className="text-center">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Danger Zone</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            Permanently delete your account and all associated data
+          </p>
+          <DeleteAccountDialog
+            onConfirm={() => {
+              // Will be implemented in backend phase
+              console.log("Delete account requested");
+            }}
+          />
+        </div>
+      </footer>
     </div>
   );
 }

@@ -1,0 +1,15 @@
+---
+/**
+ * Logout page
+ * Signs out the user and redirects to login
+ */
+import { supabaseClient } from "@/db/supabase.client";
+
+export const prerender = false;
+
+// Sign out the user
+await supabaseClient.auth.signOut();
+
+// Redirect to login page
+return Astro.redirect("/login");
+---

@@ -11,7 +11,6 @@ import type { APIRoute } from "astro";
 import { CreateTripNoteSchema } from "../../lib/schemas/tripNote.schema";
 import { TripNotesListQuerySchema } from "../../lib/schemas/tripNotesListQuery.schema";
 import { TripNotesService } from "../../lib/services/tripNotes.service";
-import { DEFAULT_USER_ID } from "../../db/supabase.client";
 import { createErrorResponse, createJsonResponse } from "../../lib/httpHelpers";
 
 /**
@@ -43,16 +42,14 @@ function mapDatabaseError(
  */
 export const GET: APIRoute = async ({ url, locals }) => {
   try {
-    const { supabase } = locals;
-
-    // TODO: Once authentication is properly implemented, get session from locals
-    // For now, using DEFAULT_USER_ID for development
-    const userId = DEFAULT_USER_ID;
+    const { supabase, user } = locals;
 
     // Check for authentication
-    if (!userId) {
+    if (!user) {
       return createErrorResponse(401, "Unauthorized");
     }
+
+    const userId = user.id;
 
     // Extract query parameters from URL
     const searchParams = url.searchParams;
@@ -93,16 +90,14 @@ export const GET: APIRoute = async ({ url, locals }) => {
  */
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    const { supabase } = locals;
+    const { supabase, user } = locals;
 
-    // TODO: Once authentication is properly implemented, get session from locals
-    // For now, using DEFAULT_USER_ID for development
-    const userId = DEFAULT_USER_ID;
-
-    // Temporary check - remove when auth is implemented
-    if (!userId) {
+    // Check for authentication
+    if (!user) {
       return createErrorResponse(401, "Unauthorized");
     }
+
+    const userId = user.id;
 
     // Parse request body
     let body: unknown;

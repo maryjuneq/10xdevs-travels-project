@@ -38,6 +38,9 @@ Backend & Infrastructure:
 ### Prerequisites
 - **Node.js 22.14.0** (see `.nvmrc`)
 - **pnpm** or **npm** ≥ 9
+- **Supabase account** (for database and authentication)
+
+### Setup
 
 ```bash
 # clone the repository
@@ -47,11 +50,40 @@ cd vibetravels
 # install dependencies
 npm install  # or pnpm install
 
+# copy the environment variables template
+cp .env.example .env
+
+# edit .env and add your Supabase credentials
+# See "Environment Variables" section below
+
 # start the development server
 npm run dev
 ```
 
 The app will be available at `http://localhost:4321` by default.
+
+### Environment Variables
+
+Create a `.env` file in the project root with the following variables:
+
+```bash
+# Supabase Configuration (Server-side)
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_KEY=your_supabase_service_role_key
+
+# Supabase Configuration (Client-side - PUBLIC_ prefix required)
+PUBLIC_SUPABASE_URL=your_supabase_project_url
+PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_public_key
+
+# OpenRouter AI Configuration
+OPENROUTER_API_KEY=your_openrouter_api_key
+```
+
+**Important Notes**:
+- Variables prefixed with `PUBLIC_` are exposed to the browser
+- Use the **anon/public key** for `PUBLIC_SUPABASE_ANON_KEY`, NOT the service role key
+- The service role key (`SUPABASE_KEY`) should only be used server-side
+- Get your Supabase credentials from your [Supabase Dashboard](https://app.supabase.com)
 
 To build a production bundle and preview it locally:
 

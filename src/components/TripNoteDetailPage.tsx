@@ -29,7 +29,7 @@ function TripNoteDetailPageContent({ id }: TripNoteDetailPageProps) {
   const isNewNote = isNaN(noteId) || noteId === 0;
 
   // Local state - must be defined BEFORE useTripNote hook
-  const [shouldGenerateAfterSave, setShouldGenerateAfterSave] = React.useState(false);
+  const [shouldGenerateAfterSave, setShouldGenerateAfterSave] = React.useState(true);
   const [generationState, setGenerationState] = React.useState<GenerationState>({
     isGenerating: false,
     error: undefined,

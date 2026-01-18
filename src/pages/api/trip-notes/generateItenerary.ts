@@ -2,7 +2,7 @@
  * POST /api/trip-notes/generateItenerary
  * Generates a travel itinerary for an existing trip note
  *
- * Authentication: Requires valid Supabase session (using DEFAULT_USER_ID for dev)
+ * Authentication: Requires valid Supabase session
  * Request Body: GenerateItineraryInput (CreateTripNoteCommand + id)
  * Response: 201 Created with TripNoteWithItineraryDTO
  *
@@ -23,7 +23,6 @@ import { PreferencesService } from "../../../lib/services/preferences.service";
 import { AIService } from "../../../lib/services/ai.service";
 import { ItinerariesService } from "../../../lib/services/itineraries.service";
 import { JobsService } from "../../../lib/services/jobs.service";
-import { DEFAULT_USER_ID } from "../../../db/supabase.client";
 import { NotFoundError, ValidationError } from "../../../lib/errors";
 import { createErrorResponse, createJsonResponse } from "../../../lib/httpHelpers";
 
@@ -35,16 +34,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const startTime = performance.now();
 
   try {
-    const { supabase } = locals;
-
-    // TODO: Once authentication is properly implemented, get session from locals
-    // For now, using DEFAULT_USER_ID for development
-    const userId = DEFAULT_USER_ID;
+    const { supabase, user } = locals;
 
     // Authentication check
-    if (!userId) {
+    if (!user) {
       return createErrorResponse(401, "Unauthorized");
     }
+
+    const userId = user.id;
 
     // Parse request body
     let body: unknown;
@@ -202,9 +199,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Try to log failed job if we have tripNoteId
     if (tripNoteId) {
       try {
-        const { supabase } = locals;
-        const userId = DEFAULT_USER_ID;
+        const { supabase, user } = locals;
+        const userId = user?.id;
         const durationMs = Math.round(performance.now() - startTime);
+        
+        if (!userId) {
+          console.error("Cannot log failed job - user not authenticated");
+          return createErrorResponse(500, "AI generation failed");
+        }
+        
         await JobsService.logFailed(
           tripNoteId,
           `Unexpected error: ${error.message || error}`,

@@ -1,4 +1,4 @@
-import { useState, useCallback, useTransition } from "react";
+import { useState, useCallback, useTransition, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { InputField, PasswordField, FormError, FormSuccess } from "@/components/forms";
 import {
@@ -11,12 +11,12 @@ import {
   type PasswordResetRequestFormData,
   type PasswordResetConfirmFormData,
 } from "@/lib/schemas/auth.schema";
+import { supabaseBrowser } from "@/db/supabase.browser";
 
 type AuthMode = "login" | "register" | "reset" | "reset-confirm";
 
 interface AuthFormProps {
   mode: AuthMode;
-  resetToken?: string;
 }
 
 type FormData = LoginFormData | RegisterFormData | PasswordResetRequestFormData | PasswordResetConfirmFormData;
@@ -29,7 +29,7 @@ interface FormErrors {
   confirmPassword?: string;
 }
 
-export function AuthForm({ mode, resetToken }: AuthFormProps) {
+export function AuthForm({ mode }: AuthFormProps) {
   const [isPending, startTransition] = useTransition();
   const [formData, setFormData] = useState<FormData>({
     email: "",
@@ -39,6 +39,22 @@ export function AuthForm({ mode, resetToken }: AuthFormProps) {
   const [errors, setErrors] = useState<FormErrors>({});
   const [formError, setFormError] = useState<string>("");
   const [formSuccess, setFormSuccess] = useState<string>("");
+  const [isValidResetToken, setIsValidResetToken] = useState<boolean>(mode !== "reset-confirm");
+
+  // For password reset confirmation, verify the token from URL hash
+  useEffect(() => {
+    if (mode === "reset-confirm") {
+      // Check if there's a valid session from the password reset link
+      supabaseBrowser.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          setIsValidResetToken(true);
+        } else {
+          setIsValidResetToken(false);
+          setFormError("Invalid or expired reset link. Please request a new password reset.");
+        }
+      });
+    }
+  }, [mode]);
 
   const getSchema = useCallback(() => {
     switch (mode) {
@@ -114,21 +130,94 @@ export function AuthForm({ mode, resetToken }: AuthFormProps) {
         return;
       }
 
-      // In a real implementation, this would call the API
-      // For now, we just show a success message for reset requests
-      startTransition(() => {
-        if (mode === "reset") {
-          // Simulate API call
-          setTimeout(() => {
+      // Call the appropriate API endpoint
+      startTransition(async () => {
+        try {
+          if (mode === "login") {
+            const response = await fetch("/api/auth/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: (formData as LoginFormData).email,
+                password: (formData as LoginFormData).password,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              setFormError(data.error || "Something went wrong. Please try again.");
+              return;
+            }
+
+            // Redirect to dashboard
+            window.location.href = "/";
+          } else if (mode === "register") {
+            const response = await fetch("/api/auth/register", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: (formData as RegisterFormData).email,
+                password: (formData as RegisterFormData).password,
+                confirmPassword: (formData as RegisterFormData).confirmPassword,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              setFormError(data.error || "Something went wrong. Please try again.");
+              return;
+            }
+
+            // Redirect to dashboard
+            window.location.href = "/";
+          } else if (mode === "reset") {
+            const response = await fetch("/api/auth/password-reset", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: (formData as PasswordResetRequestFormData).email,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              setFormError(data.error || "Something went wrong. Please try again.");
+              return;
+            }
+
             setFormSuccess(
-              "If an account exists with this email, you will receive a password reset link shortly."
+              data.message || "If an account exists with this email, you will receive a password reset link shortly."
             );
-          }, 500);
-        } else if (mode === "reset-confirm") {
-          setFormSuccess("Your password has been reset successfully. You can now sign in.");
-        } else {
-          // Login/Register would redirect on success
-          console.log("Form submitted:", result.data);
+          } else if (mode === "reset-confirm") {
+            const response = await fetch("/api/auth/password-reset-confirm", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                password: (formData as PasswordResetConfirmFormData).password,
+                confirmPassword: (formData as PasswordResetConfirmFormData).confirmPassword,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              setFormError(data.error || "Something went wrong. Please try again.");
+              return;
+            }
+
+            setFormSuccess(data.message || "Your password has been reset successfully. You can now sign in.");
+            
+            // Redirect to login after 2 seconds
+            setTimeout(() => {
+              window.location.href = "/login";
+            }, 2000);
+          }
+        } catch (error) {
+          console.error("Form submission error:", error);
+          setFormError("Something went wrong. Please try again.");
         }
       });
     },
@@ -153,6 +242,21 @@ export function AuthForm({ mode, resetToken }: AuthFormProps) {
 
       <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8">
         <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+          {mode === "reset-confirm" && !isValidResetToken && (
+            <div className="text-center">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                The password reset link is invalid or has expired.
+              </p>
+              <a
+                href="/password-reset"
+                className="text-sm font-medium text-primary hover:text-primary/90 transition-colors"
+              >
+                Request a new reset link
+              </a>
+            </div>
+          )}
+          {(mode !== "reset-confirm" || isValidResetToken) && (
+            <>
           <FormError message={formError} />
           <FormSuccess message={formSuccess} />
 
@@ -201,9 +305,15 @@ export function AuthForm({ mode, resetToken }: AuthFormProps) {
             />
           )}
 
-          <Button type="submit" className="w-full" disabled={isPending}>
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={isPending || (mode === "reset-confirm" && !isValidResetToken)}
+          >
             {isPending ? "Processing..." : getSubmitLabel()}
           </Button>
+          </>
+          )}
         </form>
 
         <div className="mt-6 space-y-4">

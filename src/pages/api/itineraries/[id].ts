@@ -3,14 +3,13 @@
  *
  * PUT: Updates the full text of an existing itinerary and flags it as manually edited
  *
- * Authentication: Requires valid Supabase session (temporary fallback to DEFAULT_USER_ID)
+ * Authentication: Requires valid Supabase session
  * Authorization: Only allows operations on itineraries owned by the authenticated user
  */
 
 import type { APIRoute } from "astro";
 import { UpdateItinerarySchema } from "../../../lib/schemas/updateItinerary.schema";
 import { ItinerariesService } from "../../../lib/services/itineraries.service";
-import { DEFAULT_USER_ID } from "../../../db/supabase.client";
 import { NotFoundError, ForbiddenError, InternalServerError } from "../../../lib/errors";
 import { createErrorResponse, createJsonResponse } from "../../../lib/httpHelpers";
 
@@ -29,16 +28,14 @@ import { createErrorResponse, createJsonResponse } from "../../../lib/httpHelper
  */
 export const PUT: APIRoute = async ({ params, request, locals }) => {
   try {
-    const { supabase } = locals;
-
-    // TODO: Once authentication is properly implemented, get session from locals
-    // For now, using DEFAULT_USER_ID for development
-    const userId = DEFAULT_USER_ID;
+    const { supabase, user } = locals;
 
     // Check for authentication
-    if (!userId) {
+    if (!user) {
       return createErrorResponse(401, "Authentication required");
     }
+
+    const userId = user.id;
 
     // Validate and parse id from path parameter
     const idParam = params.id;
