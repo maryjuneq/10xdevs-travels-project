@@ -51,7 +51,7 @@ export class AIService {
       apiKey,
       defaultModel: 'openai/gpt-oss-120b:free',
       defaultTemperature: 0.7,
-      timeout: 90000, // 90 seconds
+      timeout: 120000, // 120 seconds (increased for longer responses)
       maxRetries: 3,
     });
   }
@@ -97,13 +97,13 @@ export class AIService {
       // Call OpenRouter API with structured response schema
       const service = this.getService();
       const response = await service.chat({
-        system: 'You are a professional travel planner. Generate detailed, practical, and personalized travel itineraries. Always respond with valid JSON matching the requested schema.',
+        system: 'You are a professional travel planner. Generate detailed, practical, and personalized travel itineraries. Always respond with valid JSON matching the requested schema. Keep responses concise but informative.',
         messages: [
           { role: 'user', content: prompt }
         ],
         responseSchema: AIItineraryResponseSchema,
         temperature: 0.7,
-        max_tokens: 4000,
+        max_tokens: 8000, // Increased to handle longer itineraries
       });
 
       const endTime = performance.now();
@@ -253,8 +253,15 @@ Duration suggested by the user: ${tripNote.approximateTripLength} days
 Group Size: ${tripNote.groupSize} ${tripNote.groupSize === 1 ? "person" : "people"}
 ${tripNote.budgetAmount ? `Budget suggested by the user: ${tripNote.budgetAmount} ${tripNote.currency || "USD"} for group` : "Budget: Not provided by the user"}
 ${tripNote.currency ? `Preferred currency: ${tripNote.currency}` : "Currency: Not provided by the user"}
-Details from the user: ${tripNote.details}
+Details from the user: ${tripNote.details}. Those are additional details that user provided to help you plan the trip. Might be some atractions that user or their companions are interested in or other important notes. Use this as primary guideline and then propose additional destination, activities, etc to fill in the itinerary.
+Please consider the following user preferences:
 ${prefText}
+If they are about activities or attractions, please try to find something matching and include it in the itinerary.
+If they are about food, please try to find something matching and include it in the itinerary.
+If they are about transportation options, please include it in planning the itinerary.
+If they are about accommodation preferences, please include it in planning the itinerary.
+If they are about costs, please include it in planning budget.
+They are important part of the planning, as those are general guideliness for all the trips that user is planning.
 
 Please provide a comprehensive day-by-day itinerary including:
 - Daily activities and attractions
@@ -262,11 +269,13 @@ Please provide a comprehensive day-by-day itinerary including:
 - Dining suggestions
 - Transportation options
 
+IMPORTANT: Keep the itinerary concise and well-structured. For each day, provide 2-3 key activities with brief descriptions. Focus on quality over quantity.
+
 Assess if the trip length suggested by the user is realistic based on destination and preferences provided in details and user preferences. Suggest a more realistic trip length if it is not.
 Assess if the budget suggested by the user is realistic based on destination and preferences provided in details and user preferences. Suggest a more realistic budget if it is not. In case budget was not provided by the user, suggest a budget based on destination and preferences provided in details and user preferences.
 
 Format the response in JSON, providing the following fields:
-- itinerary: string (comprehensive day-by-day itinerary in Markdown format with daily breakdown, accommodations, dining, transportation, etc.)
+- itinerary: string (well-structured day-by-day itinerary in Markdown format with daily breakdown, accommodations, dining, transportation, etc. Keep it concise but informative - aim for 100-200 words per day)
 - suggestedTripLength: number (realistic trip length in days based on your assessment)
 - suggestedBudget: string (Realistic budget per whole group in the currency provided or USD if not specified. This should be a short string, just a number and currency, keep the details in itinerary field)`;
   }
