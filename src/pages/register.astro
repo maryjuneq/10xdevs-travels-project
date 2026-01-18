@@ -1,0 +1,10 @@
+---
+import GuestLayout from "@/layouts/GuestLayout.astro";
+import { AuthForm } from "@/components/auth";
+
+export const prerender = false;
+---
+
+<GuestLayout title="Create Account - 10x Travels" description="Create a new 10x Travels account">
+  <AuthForm mode="register" client:load />
+</GuestLayout>

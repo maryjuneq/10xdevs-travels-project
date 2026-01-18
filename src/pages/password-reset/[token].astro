@@ -1,0 +1,20 @@
+---
+import GuestLayout from "@/layouts/GuestLayout.astro";
+import { AuthForm } from "@/components/auth";
+
+export const prerender = false;
+
+const { token } = Astro.params;
+
+// Basic token validation - ensure it exists
+if (!token) {
+  return Astro.redirect("/password-reset");
+}
+---
+
+<GuestLayout
+  title="Reset Password - 10x Travels"
+  description="Enter your new password to reset your 10x Travels account"
+>
+  <AuthForm mode="reset-confirm" resetToken={token} client:load />
+</GuestLayout>
