@@ -31,6 +31,11 @@ Backend & Infrastructure:
 - **GitHub Actions** – CI / CD pipelines
 - **Docker + DigitalOcean** – deployment target
 
+Testing:
+- **Vitest** – unit and integration testing
+- **React Testing Library** – component-level tests
+- **Playwright** – end-to-end, visual, and accessibility testing
+
 ---
 
 ## Getting Started Locally

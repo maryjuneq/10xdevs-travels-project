@@ -21,3 +21,8 @@
 - GitHub Actions for creating CI/CD pipelines.
 - DigitalOcean for hosting the application via a Docker image.
 
+## Testing
+- Vitest for unit and integration testing.
+- React Testing Library for component testing.
+- Playwright for end-to-end, visual regression, and accessibility testing.
+
