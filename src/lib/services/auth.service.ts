@@ -5,18 +5,18 @@ import type { AuthError, Session, User } from "@supabase/supabase-js";
  * Authentication Service
  * Handles all authentication operations using Supabase Auth
  */
-export class AuthService {
+export const AuthService = {
   /**
    * Register a new user with email and password
    */
-  static async register(email: string, password: string): Promise<{ user: User; session: Session }> {
+  async register(email: string, password: string): Promise<{ user: User; session: Session }> {
     const { data, error } = await supabaseClient.auth.signUp({
       email,
       password,
     });
 
     if (error) {
-      throw AuthService.normalizeError(error);
+      throw this.normalizeError(error);
     }
 
     if (!data.user || !data.session) {
@@ -24,19 +24,19 @@ export class AuthService {
     }
 
     return { user: data.user, session: data.session };
-  }
+  },
 
   /**
    * Sign in an existing user with email and password
    */
-  static async login(email: string, password: string): Promise<{ user: User; session: Session }> {
+  async login(email: string, password: string): Promise<{ user: User; session: Session }> {
     const { data, error } = await supabaseClient.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      throw AuthService.normalizeError(error);
+      throw this.normalizeError(error);
     }
 
     if (!data.user || !data.session) {
@@ -44,24 +44,24 @@ export class AuthService {
     }
 
     return { user: data.user, session: data.session };
-  }
+  },
 
   /**
    * Sign out the current user
    */
-  static async logout(): Promise<void> {
+  async logout(): Promise<void> {
     const { error } = await supabaseClient.auth.signOut();
 
     if (error) {
-      throw AuthService.normalizeError(error);
+      throw this.normalizeError(error);
     }
-  }
+  },
 
   /**
    * Request a password reset email
    * Note: Always returns success to prevent user enumeration
    */
-  static async requestPasswordReset(email: string, redirectTo?: string): Promise<void> {
+  async requestPasswordReset(email: string, redirectTo?: string): Promise<void> {
     const options = redirectTo ? { redirectTo } : undefined;
 
     const { error } = await supabaseClient.auth.resetPasswordForEmail(email, options);
@@ -73,34 +73,34 @@ export class AuthService {
 
     // Always succeed to prevent user enumeration
     return;
-  }
+  },
 
   /**
    * Confirm password reset with new password
    */
-  static async confirmPasswordReset(newPassword: string): Promise<void> {
+  async confirmPasswordReset(newPassword: string): Promise<void> {
     const { error } = await supabaseClient.auth.updateUser({
       password: newPassword,
     });
 
     if (error) {
-      throw AuthService.normalizeError(error);
+      throw this.normalizeError(error);
     }
-  }
+  },
 
   /**
    * Delete the current user's account and all associated data
    * Note: This is handled by the API endpoint /api/auth/delete
    * This method is not used directly but kept for completeness
    */
-  static async deleteAccount(): Promise<void> {
+  async deleteAccount(): Promise<void> {
     throw new Error("Use /api/auth/delete endpoint for account deletion");
-  }
+  },
 
   /**
    * Get the current authenticated user
    */
-  static async getCurrentUser(): Promise<User | null> {
+  async getCurrentUser(): Promise<User | null> {
     const {
       data: { user },
       error,
@@ -112,12 +112,12 @@ export class AuthService {
     }
 
     return user;
-  }
+  },
 
   /**
    * Get the current session
    */
-  static async getSession(): Promise<Session | null> {
+  async getSession(): Promise<Session | null> {
     const {
       data: { session },
       error,
@@ -129,12 +129,12 @@ export class AuthService {
     }
 
     return session;
-  }
+  },
 
   /**
    * Normalize Supabase auth errors into user-friendly messages
    */
-  private static normalizeError(error: AuthError): Error {
+  normalizeError(error: AuthError): Error {
     // Map common Supabase error messages to user-friendly ones
     switch (error.message) {
       case "Invalid login credentials":
@@ -150,5 +150,5 @@ export class AuthService {
         console.error("Auth error:", error);
         return new Error("Something went wrong. Please try again.");
     }
-  }
-}
+  },
+};

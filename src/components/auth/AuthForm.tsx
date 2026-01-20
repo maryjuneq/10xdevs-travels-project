@@ -233,7 +233,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">{getTitle()}</h1>
         {mode === "reset" && (
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Enter your email address and we'll send you a link to reset your password.
+            Enter your email address and we&apos;ll send you a link to reset your password.
           </p>
         )}
         {mode === "register" && (
@@ -331,7 +331,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 </a>
               </div>
               <div className="text-center text-sm text-gray-600 dark:text-gray-400">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <a href="/register" className="font-medium text-primary hover:text-primary/90 transition-colors">
                   Sign up
                 </a>

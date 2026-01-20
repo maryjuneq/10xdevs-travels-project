@@ -15,6 +15,7 @@ Successfully implemented a production-ready OpenRouter service with complete int
 **Location:** `src/lib/openrouter/`
 
 **Files Created:**
+
 - `OpenRouterService.ts` - Main service implementation (417 lines)
 - `types.ts` - TypeScript interfaces and type definitions (150 lines)
 - `errors.ts` - Custom error hierarchy (95 lines)
@@ -24,6 +25,7 @@ Successfully implemented a production-ready OpenRouter service with complete int
 ### 2. Key Features Implemented
 
 #### ✅ Constructor & Configuration
+
 - API key validation with early error handling
 - HTTPS enforcement for security
 - Configurable timeout (default: 60 seconds)
@@ -31,6 +33,7 @@ Successfully implemented a production-ready OpenRouter service with complete int
 - Dependency injection support for testing
 
 #### ✅ Public Methods
+
 1. **`chat(params: ChatParams): Promise<ChatSuccess>`**
    - Full chat completion with structured response support
    - Timeout handling with AbortController
@@ -47,6 +50,7 @@ Successfully implemented a production-ready OpenRouter service with complete int
    - Comprehensive error messages
 
 #### ✅ Private Methods
+
 1. **`#buildPayload(params)`**
    - Constructs OpenRouter-compliant request body
    - Merges system message with messages array
@@ -75,6 +79,7 @@ Successfully implemented a production-ready OpenRouter service with complete int
 **Location:** `src/lib/openrouter/errors.ts`
 
 **Custom Error Classes:**
+
 1. **BaseError** - Base class with `code` and `meta` fields
 2. **ConfigurationError** - Invalid config (missing API key, non-HTTPS)
 3. **RequestValidationError** - Invalid parameters (empty messages)
@@ -89,6 +94,7 @@ Successfully implemented a production-ready OpenRouter service with complete int
 **Location:** `src/lib/openrouter/types.ts`
 
 **Key Interfaces:**
+
 - `ChatParams` - Request parameters with optional Zod schema
 - `ChatSuccess` - Response with usage stats and optional JSON
 - `ChatMessage` - Individual message structure
@@ -101,6 +107,7 @@ Successfully implemented a production-ready OpenRouter service with complete int
 **Location:** `src/lib/services/ai.service.ts`
 
 **Changes Made:**
+
 - Added `initialize(apiKey)` static method for service setup
 - Integrated OpenRouterService for real API calls
 - Maintained backward compatibility with mock implementation
@@ -108,9 +115,10 @@ Successfully implemented a production-ready OpenRouter service with complete int
 - Updated `generateItinerary()` to use OpenRouter when initialized
 
 **Key Implementation:**
+
 ```typescript
 static async generateItinerary(
-  tripNote: TripNoteDTO, 
+  tripNote: TripNoteDTO,
   preferences: UserPreferenceDTO[],
   useMock = false
 ): Promise<AIGenerationResult>
@@ -121,6 +129,7 @@ static async generateItinerary(
 **Location:** `src/middleware/index.ts`
 
 **Changes Made:**
+
 - Auto-initialization of AIService on application startup
 - Graceful fallback to mock if API key missing
 - Support for both `OPENROUTER_API_KEY` and `API_KEY` env vars
@@ -128,6 +137,7 @@ static async generateItinerary(
 ### 7. Environment Configuration
 
 **Changes Made:**
+
 - Updated `.env.example` with `OPENROUTER_API_KEY` documentation
 - Added usage instructions and link to OpenRouter
 
@@ -136,11 +146,13 @@ static async generateItinerary(
 ## 🔧 Technical Specifications
 
 ### Dependencies
+
 - ✅ **zod-to-json-schema** (v3.25.1) - Already installed as transitive dependency
 - ✅ **zod** (v3.25.76) - Already in project
 - ✅ **undici** - Polyfills fetch API (via Astro)
 
 ### Security Features
+
 - ✅ HTTPS enforcement
 - ✅ API key stored in private fields (never logged)
 - ✅ Timeout protection (60s default)
@@ -148,12 +160,14 @@ static async generateItinerary(
 - ✅ Secure error messages (no sensitive data exposure)
 
 ### Performance Features
+
 - ✅ Retry logic with exponential backoff
 - ✅ Configurable timeouts
 - ✅ AbortController for request cancellation
 - ✅ Smart retry (skips non-retryable errors)
 
 ### Testing Support
+
 - ✅ Dependency injection via `fetchFn` parameter
 - ✅ Mock mode in AIService (`useMock` flag)
 - ✅ Comprehensive error types for assertions
@@ -164,37 +178,40 @@ static async generateItinerary(
 ## 📝 Usage Examples
 
 ### Basic Chat
+
 ```typescript
-const service = new OpenRouterService({ 
-  apiKey: import.meta.env.OPENROUTER_API_KEY 
+const service = new OpenRouterService({
+  apiKey: import.meta.env.OPENROUTER_API_KEY,
 });
 
 const response = await service.chat({
-  messages: [{ role: 'user', content: 'Hello!' }]
+  messages: [{ role: "user", content: "Hello!" }],
 });
 ```
 
 ### Structured JSON Response
+
 ```typescript
-const schema = z.object({ 
-  city: z.string(), 
-  temp: z.number() 
+const schema = z.object({
+  city: z.string(),
+  temp: z.number(),
 });
 
 const response = await service.chat({
-  system: 'You are a weather bot',
-  messages: [{ role: 'user', content: 'Paris weather' }],
-  responseSchema: schema
+  system: "You are a weather bot",
+  messages: [{ role: "user", content: "Paris weather" }],
+  responseSchema: schema,
 });
 
 console.log(response.json); // { city: 'Paris', temp: 17 }
 ```
 
 ### Via AIService (Integrated)
+
 ```typescript
 // Automatically initialized in middleware
 const result = await AIService.generateItinerary(
-  tripNote, 
+  tripNote,
   preferences,
   false // useMock = false for real API
 );
@@ -205,6 +222,7 @@ const result = await AIService.generateItinerary(
 ## 🎯 Implementation Highlights
 
 ### Best Practices Applied
+
 1. ✅ **Guard Clauses** - Early returns for error conditions
 2. ✅ **Error Handling First** - Validates inputs before processing
 3. ✅ **Happy Path Last** - Main logic after all validations
@@ -214,6 +232,7 @@ const result = await AIService.generateItinerary(
 7. ✅ **Type Safety** - Full TypeScript strict mode compliance
 
 ### Code Quality
+
 - ✅ **0 Linter Errors** - Passes all ESLint checks
 - ✅ **Clean Code** - Follows project coding standards
 - ✅ **Well Documented** - Inline comments and external README
@@ -225,6 +244,7 @@ const result = await AIService.generateItinerary(
 ## 🚀 Integration Status
 
 ### ✅ Completed Integrations
+
 1. **AIService** - Full integration with backward compatibility
 2. **Middleware** - Auto-initialization on app startup
 3. **Environment** - `.env.example` updated with documentation
@@ -232,6 +252,7 @@ const result = await AIService.generateItinerary(
 5. **Type System** - Compatible with existing DTOs
 
 ### 🔄 Ready for Use
+
 - Service can be used immediately after setting `OPENROUTER_API_KEY`
 - Falls back to mock implementation if key not provided
 - No breaking changes to existing functionality
@@ -241,17 +262,17 @@ const result = await AIService.generateItinerary(
 
 ## 📊 Metrics
 
-| Metric | Value |
-|--------|-------|
-| **Total Lines of Code** | ~1,100 |
-| **Files Created** | 5 |
-| **Files Modified** | 3 |
-| **Error Classes** | 7 |
-| **Public Methods** | 3 |
-| **Private Methods** | 5 |
-| **Type Definitions** | 6 interfaces |
-| **Linter Errors** | 0 |
-| **Test Coverage** | Ready for testing |
+| Metric                  | Value             |
+| ----------------------- | ----------------- |
+| **Total Lines of Code** | ~1,100            |
+| **Files Created**       | 5                 |
+| **Files Modified**      | 3                 |
+| **Error Classes**       | 7                 |
+| **Public Methods**      | 3                 |
+| **Private Methods**     | 5                 |
+| **Type Definitions**    | 6 interfaces      |
+| **Linter Errors**       | 0                 |
+| **Test Coverage**       | Ready for testing |
 
 ---
 
@@ -322,6 +343,7 @@ const result = await AIService.generateItinerary(
 ## 🧪 Testing Recommendations
 
 ### Unit Tests to Write
+
 1. Constructor validation (missing API key, non-HTTPS)
 2. Request payload building with/without schemas
 3. Error handling for each error type
@@ -331,6 +353,7 @@ const result = await AIService.generateItinerary(
 7. Mock responses for various scenarios
 
 ### Integration Tests
+
 1. End-to-end itinerary generation
 2. AIService initialization
 3. Middleware integration
@@ -373,6 +396,7 @@ These are NOT part of the current implementation but could be considered:
 **Implementation Status:** COMPLETE ✅
 
 All requirements from the implementation plan have been fulfilled:
+
 - ✅ Service structure and architecture
 - ✅ Constructor with validation
 - ✅ Public methods (chat, stream, validateJson)
@@ -387,6 +411,7 @@ All requirements from the implementation plan have been fulfilled:
 - ✅ Documentation
 
 **Code Quality:** EXCELLENT ✅
+
 - 0 linter errors
 - Follows all project coding standards
 - Comprehensive error handling
@@ -394,6 +419,7 @@ All requirements from the implementation plan have been fulfilled:
 - Type-safe
 
 **Ready for Production:** YES ✅
+
 - Add `OPENROUTER_API_KEY` to `.env`
 - Service will initialize automatically
 - Falls back to mock if key missing

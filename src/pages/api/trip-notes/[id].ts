@@ -62,7 +62,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
 
     // Return trip note with itinerary
     return createJsonResponse(tripNote);
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Log error for debugging
     console.error("Error in GET /api/trip-notes/{id}:", error);
 
@@ -131,7 +131,7 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
 
     // Return updated trip note with itinerary
     return createJsonResponse(updatedTripNote);
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Log error for debugging
     console.error("Error in PUT /api/trip-notes/{id}:", error);
 
@@ -202,7 +202,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
 
     // Return 204 No Content on successful deletion
     return createNoContentResponse();
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Log error for debugging
     console.error("Error in DELETE /api/trip-notes/{id}:", error);
 

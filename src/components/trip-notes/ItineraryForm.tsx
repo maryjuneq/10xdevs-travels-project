@@ -61,8 +61,8 @@ export function ItineraryForm({ itinerary, onUpdate, disabled = false }: Itinera
         <Sparkles className="h-16 w-16 text-muted-foreground mb-4" />
         <h3 className="text-lg font-semibold mb-2">No Itinerary Yet</h3>
         <p className="text-sm text-muted-foreground max-w-md">
-          Save your trip note and click "Save & Generate Itinerary" to create an AI-powered travel plan based on your
-          preferences.
+          Save your trip note and click &quot;Save &amp; Generate Itinerary&quot; to create an AI-powered travel plan
+          based on your preferences.
         </p>
       </div>
     );

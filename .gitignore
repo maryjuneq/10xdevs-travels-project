@@ -3,6 +3,7 @@ dist/
 
 # generated types
 .astro/
+src/db/database.types.ts
 
 # dependencies
 node_modules/
@@ -22,3 +23,4 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+.env.test

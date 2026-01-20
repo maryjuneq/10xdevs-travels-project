@@ -7,6 +7,7 @@ A web-based application that turns simple travel notes into actionable, day-leve
 ---
 
 ## Table of Contents
+
 1. [Tech Stack](#tech-stack)
 2. [Getting Started Locally](#getting-started-locally)
 3. [Available Scripts](#available-scripts)
@@ -19,6 +20,7 @@ A web-based application that turns simple travel notes into actionable, day-leve
 ## Tech Stack
 
 Frontend:
+
 - **Astro&nbsp;5** – lightning-fast, component-agnostic framework
 - **React&nbsp;19** – interactive UI components
 - **TypeScript&nbsp;5** – type-safe JavaScript
@@ -26,12 +28,14 @@ Frontend:
 - **shadcn/ui** – accessible component library
 
 Backend & Infrastructure:
+
 - **Supabase** – PostgreSQL database, Auth, Storage
 - **Openrouter.ai** – access to multiple AI models
 - **GitHub Actions** – CI / CD pipelines
 - **Docker + DigitalOcean** – deployment target
 
 Testing:
+
 - **Vitest** – unit and integration testing
 - **React Testing Library** – component-level tests
 - **Playwright** – end-to-end, visual, and accessibility testing
@@ -41,6 +45,7 @@ Testing:
 ## Getting Started Locally
 
 ### Prerequisites
+
 - **Node.js 22.14.0** (see `.nvmrc`)
 - **pnpm** or **npm** ≥ 9
 - **Supabase account** (for database and authentication)
@@ -85,6 +90,7 @@ OPENROUTER_API_KEY=your_openrouter_api_key
 ```
 
 **Important Notes**:
+
 - Variables prefixed with `PUBLIC_` are exposed to the browser
 - Use the **anon/public key** for `PUBLIC_SUPABASE_ANON_KEY`, NOT the service role key
 - The service role key (`SUPABASE_KEY`) should only be used server-side
@@ -101,21 +107,22 @@ npm run preview
 
 ## Available Scripts
 
-| Script            | Purpose                                   |
-|-------------------|-------------------------------------------|
-| `npm run dev`     | Start Astro in development mode with hot reload |
-| `npm run build`   | Generate a static production build            |
-| `npm run preview` | Serve the production build locally            |
-| `npm run astro`   | Run arbitrary Astro CLI commands              |
-| `npm run lint`    | Run ESLint on the project                    |
-| `npm run lint:fix`| Lint and automatically fix problems          |
-| `npm run format`  | Format files with Prettier                   |
+| Script             | Purpose                                         |
+| ------------------ | ----------------------------------------------- |
+| `npm run dev`      | Start Astro in development mode with hot reload |
+| `npm run build`    | Generate a static production build              |
+| `npm run preview`  | Serve the production build locally              |
+| `npm run astro`    | Run arbitrary Astro CLI commands                |
+| `npm run lint`     | Run ESLint on the project                       |
+| `npm run lint:fix` | Lint and automatically fix problems             |
+| `npm run format`   | Format files with Prettier                      |
 
 ---
 
 ## Project Scope
 
 The MVP focuses on the following core functionality:
+
 1. **Auth** – email & password sign-up / sign-in (Supabase Auth)
 2. **Trip Notes CRUD** – destination, dates, budget, details, group size
 3. **Preferences** – user travel preferences stored privately

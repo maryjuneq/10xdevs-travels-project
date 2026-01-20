@@ -1,6 +1,7 @@
 # Trip Note Detail View - UI Refactoring Summary
 
 ## Overview
+
 This document tracks UI improvements and refactoring work for the Trip Note Detail view. These changes enhance user experience based on feedback from the initial implementation.
 
 ## Session 1 - January 16, 2026
@@ -14,6 +15,7 @@ This document tracks UI improvements and refactoring work for the Trip Note Deta
 **Requested Behavior**: When the "Flexible travel dates" toggle is enabled, pre-populate the Latest Start Date picker with the value from the Earliest Start Date (if already set), so users can start from there instead of today's date.
 
 **Implementation**:
+
 - Modified `handleFlexibleDatesChange()` in `NoteForm.tsx`
 - Added `useEffect` hook to watch for Earliest Start Date changes
 - **Scenario 1**: When flexible dates toggle is turned ON:
@@ -26,6 +28,7 @@ This document tracks UI improvements and refactoring work for the Trip Note Deta
 - This provides a better starting point for users to adjust their date range in both workflows
 
 **Code Changes**:
+
 ```typescript
 // Before: No pre-population when enabling flexible dates
 const handleFlexibleDatesChange = (checked: boolean) => {
@@ -63,6 +66,7 @@ React.useEffect(() => {
 ```
 
 **User Benefits**:
+
 - Faster date selection workflow in multiple scenarios
 - Less clicking required to set date ranges
 - Works regardless of the order: toggle-then-date OR date-then-toggle
@@ -71,6 +75,7 @@ React.useEffect(() => {
 - Latest Start Date always stays in sync with Earliest Start Date when needed
 
 **Files Modified**:
+
 - `src/components/trip-notes/NoteForm.tsx`
 
 ---
@@ -82,6 +87,7 @@ React.useEffect(() => {
 **Requested Behavior**: Calendar should open to the month of the currently selected date, making it easier for users to adjust dates without navigating through months.
 
 **Implementation**:
+
 - Modified `DatePicker` component in `src/components/ui/date-picker.tsx`
 - Added `defaultMonth` prop to the Calendar component
 - Set `defaultMonth={date || new Date()}` to show:
@@ -89,6 +95,7 @@ React.useEffect(() => {
   - The current month (if no date is selected)
 
 **Code Changes**:
+
 ```typescript
 // Before: Calendar always opened to current month
 <Calendar
@@ -115,12 +122,14 @@ React.useEffect(() => {
 ```
 
 **User Benefits**:
+
 - Faster date adjustments - no need to navigate to the correct month
 - More intuitive behavior - calendar shows the context of the selected date
 - Reduces clicks when fine-tuning dates
 - Consistent with user expectations
 
 **Files Modified**:
+
 - `src/components/ui/date-picker.tsx`
 
 ---
@@ -129,13 +138,15 @@ React.useEffect(() => {
 
 **Issue**: Itinerary changes were automatically saved on blur (when user clicked outside the textarea). This behavior was not transparent and users couldn't control when to save changes.
 
-**Requested Behavior**: 
+**Requested Behavior**:
+
 - Add an explicit "Save Changes" button for itinerary editing
 - Button should only be visible when "Edit" switch is toggled on
 - Replace save-on-blur with manual save via button click
 - Maintain the same save behavior, just triggered explicitly by the user
 
 **Implementation**:
+
 - Removed `onBlur` handler from the Textarea component
 - Renamed `handleBlur()` to `handleSaveChanges()` (same logic, different trigger)
 - Added a "Save Changes" button with Save icon
@@ -149,6 +160,7 @@ React.useEffect(() => {
 - Moved save status messages to button area for better UX
 
 **Code Changes**:
+
 ```typescript
 // Added imports
 import { Save } from "lucide-react";
@@ -180,6 +192,7 @@ const hasUnsavedChanges = itineraryText !== previousTextRef.current;
 ```
 
 **User Benefits**:
+
 - Clear, explicit control over when changes are saved
 - Visual indicator when there are unsaved changes
 - Better transparency about save actions
@@ -187,6 +200,7 @@ const hasUnsavedChanges = itineraryText !== previousTextRef.current;
 - Follows common UX patterns (explicit save buttons)
 
 **Files Modified**:
+
 - `src/components/trip-notes/ItineraryForm.tsx`
 
 ---

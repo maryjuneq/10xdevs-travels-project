@@ -1,31 +1,34 @@
 # REST API Plan
 
 ## 1. Resources
-| Resource | DB Table | Description |
-|----------|----------|-------------|
-| `trip_notes` | `trip_notes` | User-authored notes describing an upcoming trip idea. |
-| `itineraries` | `itineraries` | AI-generated travel plans linked 1-to-1 with a `trip_note`. |
-| `ai_generation_jobs` | `ai_generation_jobs` | Store statistics data on itenerary generation jobs. For admin use. |
-| `user_preferences` | `user_preferences` | Personal travel preferences used to shape itinerary generation. |
-| `auth` | Supabase `auth.users` | Managed by Supabase Auth for registration, login, and account deletion. |
 
-*All endpoints are mounted under `/api` and protected by Supabase JWT-based session middleware unless explicitly stated as public (e.g., `POST /api/auth/login`).*
+| Resource             | DB Table              | Description                                                             |
+| -------------------- | --------------------- | ----------------------------------------------------------------------- |
+| `trip_notes`         | `trip_notes`          | User-authored notes describing an upcoming trip idea.                   |
+| `itineraries`        | `itineraries`         | AI-generated travel plans linked 1-to-1 with a `trip_note`.             |
+| `ai_generation_jobs` | `ai_generation_jobs`  | Store statistics data on itenerary generation jobs. For admin use.      |
+| `user_preferences`   | `user_preferences`    | Personal travel preferences used to shape itinerary generation.         |
+| `auth`               | Supabase `auth.users` | Managed by Supabase Auth for registration, login, and account deletion. |
+
+_All endpoints are mounted under `/api` and protected by Supabase JWT-based session middleware unless explicitly stated as public (e.g., `POST /api/auth/login`)._
 
 ---
 
 ## 2. Endpoints
 
 ### 2.2 Trip Notes
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/api/trip-notes` | List notes for authenticated user. Returns simplified objects (`id`, `destination`, `earliestStartDate`, `approximateTripLength`, `createdAt`, `updatedAt`, `hasItinerary`) and supports pagination, filtering & sorting. |
-| `POST` | `/api/trip-notes` | Create a new trip note. |
-| `GET` | `/api/trip-notes/{id}` | Fetch a single note. Includes `itinerary` object if one exists. |
-| `PUT` | `/api/trip-notes/{id}` | Update a trip note (full update). **Note**: `destination` is immutable and cannot be changed. |
-| `DELETE` | `/api/trip-notes/{id}` | Delete a note (cascades itinerary & jobs). |
-| `POST` | `/api/trip-notes/generateItenerary` | Note has to exist in database. Based on passed trip note data(in request body), and queried user preferences, calls the AI service for itenerary and awaits the response. On success: stores itinerary, creates a *succeeded* job record, and returns the itinerary payload (see 2.3). On failure: stores a *failed* job record and returns an error with details. |
+
+| Method   | Path                                | Description                                                                                                                                                                                                                                                                                                                                                        |
+| -------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET`    | `/api/trip-notes`                   | List notes for authenticated user. Returns simplified objects (`id`, `destination`, `earliestStartDate`, `approximateTripLength`, `createdAt`, `updatedAt`, `hasItinerary`) and supports pagination, filtering & sorting.                                                                                                                                          |
+| `POST`   | `/api/trip-notes`                   | Create a new trip note.                                                                                                                                                                                                                                                                                                                                            |
+| `GET`    | `/api/trip-notes/{id}`              | Fetch a single note. Includes `itinerary` object if one exists.                                                                                                                                                                                                                                                                                                    |
+| `PUT`    | `/api/trip-notes/{id}`              | Update a trip note (full update). **Note**: `destination` is immutable and cannot be changed.                                                                                                                                                                                                                                                                      |
+| `DELETE` | `/api/trip-notes/{id}`              | Delete a note (cascades itinerary & jobs).                                                                                                                                                                                                                                                                                                                         |
+| `POST`   | `/api/trip-notes/generateItenerary` | Note has to exist in database. Based on passed trip note data(in request body), and queried user preferences, calls the AI service for itenerary and awaits the response. On success: stores itinerary, creates a _succeeded_ job record, and returns the itinerary payload (see 2.3). On failure: stores a _failed_ job record and returns an error with details. |
 
 **Query Parameters (List)**
+
 - `page` ≧ 1 (default 1)
 - `pageSize` 1-100 (default 20)
 - `destination` → case-insensitive substring filter
@@ -34,6 +37,7 @@
 - `filter` by `hasItenerary`
 
 **Response Payload (list)**
+
 ```json
 [
   {
@@ -49,6 +53,7 @@
 ```
 
 **Request Payload (`POST`)**
+
 ```json
 {
   "destination": "Tokyo, Japan",
@@ -63,6 +68,7 @@
 ```
 
 **Request Payload (`PUT`)**
+
 ```json
 {
   "destination": "Tokyo, Japan",
@@ -75,9 +81,11 @@
   "details": "Cherry blossom season!"
 }
 ```
+
 **Note**: While `destination` must be included in the request body for validation, it cannot be changed from the original value. Attempting to change the destination will result in a validation error.
 
 **Response Payload (single)**
+
 ```json
 {
   "id": 42,
@@ -94,7 +102,7 @@
   "itinerary": {
     "id": 17,
     "suggestedTripLength": 7,
-    "itinerary": "Day 1: …",
+    "itinerary": "Day 1: …"
   }
 }
 ```
@@ -102,17 +110,20 @@
 **Success Codes**: `200 OK`, `201 Created`, `204 No Content`
 
 **Error Codes**
+
 - `400` Validation error (see Section 4)
 - `404` Note not found or not owned by user
 
 ---
 
-### 2.3 Itineraries 
-| Method | Path | Description |
-|--------|------|-------------|
-| `PUT` | `/api/itineraries/{id}` | Replace entire itinerary text (manual edits). |
+### 2.3 Itineraries
+
+| Method | Path                    | Description                                   |
+| ------ | ----------------------- | --------------------------------------------- |
+| `PUT`  | `/api/itineraries/{id}` | Replace entire itinerary text (manual edits). |
 
 **Request Payload (PUT )**
+
 ```json
 {
   "itinerary": "Day 1: … Day 2: …",
@@ -121,6 +132,7 @@
 ```
 
 **Response Payload**
+
 ```json
 {
   "id": 17,
@@ -136,9 +148,9 @@
 
 ### 2.4 Generation jobs
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/api/jobs` | (Admin only) List generation job records for analytics; supports pagination, filtering by `status`, and date range. |
+| Method | Path        | Description                                                                                                         |
+| ------ | ----------- | ------------------------------------------------------------------------------------------------------------------- |
+| `GET`  | `/api/jobs` | (Admin only) List generation job records for analytics; supports pagination, filtering by `status`, and date range. |
 
 **Job Record Example**
 
@@ -157,15 +169,17 @@
 ---
 
 ### 2.5 User Preferences
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/api/preferences` | List preferences for current user. |
-| `POST` | `/api/preferences` | Create new preference entry. |
-| `GET` | `/api/preferences/{id}` | Get single preference. |
-| `PUT` | `/api/preferences/{id}` | Replace preference. |
-| `DELETE` | `/api/preferences/{id}` | Remove preference. |
+
+| Method   | Path                    | Description                        |
+| -------- | ----------------------- | ---------------------------------- |
+| `GET`    | `/api/preferences`      | List preferences for current user. |
+| `POST`   | `/api/preferences`      | Create new preference entry.       |
+| `GET`    | `/api/preferences/{id}` | Get single preference.             |
+| `PUT`    | `/api/preferences/{id}` | Replace preference.                |
+| `DELETE` | `/api/preferences/{id}` | Remove preference.                 |
 
 **Request Payload (`POST` / `PUT`)**
+
 ```json
 {
   "category": "culture", // food | culture | adventure | nature | other
@@ -176,12 +190,14 @@
 ---
 
 ## 3. Authentication and Authorization
+
 1. **Authentication**: Supabase Auth issues JWT tokens; clients attach them as `Authorization: Bearer <jwt>`. Astro middleware (`src/middleware/index.ts`) validates the token and populates `locals.user`.
 2. **Authorization**:
    - Row-level security (RLS) in PostgreSQL ensures a user can only access rows where `user_id = auth.uid()`.
    - API layer performs an early check that the resource belongs to `locals.user.id`, returning `404` to avoid ID probing.
 
 Additional security layers:
+
 - **Rate limiting**: Global & per-route limit (e.g., 100 req/min) enforced via Astro middleware + Redis store.
 - **Input sanitization**: All inputs validated via Zod schemas.
 - **CORS**: Allow only same-origin frontend or pre-defined domains.
@@ -189,50 +205,55 @@ Additional security layers:
 ---
 
 ## 4. Validation and Business Logic
+
 ### 4.1 Validation Rules
-| Resource | Field | Rule |
-|----------|-------|------|
-| Trip Note | `destination` | Required, non-empty string ≤ 255 chars |
-| Trip Note | `earliestStartDate` | Required, ISO 8601 date |
-| Trip Note | `latestStartDate` | Required, ISO 8601 date, ≥ `earliestStartDate` |
-| Trip Note | `groupSize` | Required, integer > 0 (DB `CHECK group_size > 0`) |
-| Trip Note | `approximateTripLength` | Required, integer > 0 |
-| Trip Note | `budgetAmount` | Optional, integer > 0 |
-| Trip Note | `currency` | Optional, 3-letter ISO 4217 code |
-| Preference | `category` | Enum: food/culture/adventure/nature/other |
-| Preference | `preferenceText` | Required, non-empty |
-| Generation Job | `status` | Enum: succeeded/failed |
+
+| Resource       | Field                   | Rule                                              |
+| -------------- | ----------------------- | ------------------------------------------------- |
+| Trip Note      | `destination`           | Required, non-empty string ≤ 255 chars            |
+| Trip Note      | `earliestStartDate`     | Required, ISO 8601 date                           |
+| Trip Note      | `latestStartDate`       | Required, ISO 8601 date, ≥ `earliestStartDate`    |
+| Trip Note      | `groupSize`             | Required, integer > 0 (DB `CHECK group_size > 0`) |
+| Trip Note      | `approximateTripLength` | Required, integer > 0                             |
+| Trip Note      | `budgetAmount`          | Optional, integer > 0                             |
+| Trip Note      | `currency`              | Optional, 3-letter ISO 4217 code                  |
+| Preference     | `category`              | Enum: food/culture/adventure/nature/other         |
+| Preference     | `preferenceText`        | Required, non-empty                               |
+| Generation Job | `status`                | Enum: succeeded/failed                            |
 
 ### 4.2 Business Logic Mapping
-| Feature (PRD) | Endpoint(s) | Logic |
-|---------------|-------------|-------|
-| FR-002 CRUD Trip Notes | `/api/trip-notes*` | Standard CRUD with RLS & validation. |
-| FR-004 Generate Itinerary | `POST /api/trip-notes/generateItenerary` |  1.) Validate note exists in database. 2) Get preferences (if any) from database. 3) Call AI service asynchronously with list of preferences and a trip note object and await response. 4) On success: store itinerary and add `ai_generation_job` with `succeeded` status + duration. 5) On failure: add `ai_generation_job` with `failed` status and error text. |
-| FR-006 Persist Plan | Occurs within the generation endpoint (step 3 above). |
-| FR-007 Retry on Failure | If job status `failed`, frontend displays `errorText` & allows re-POST generate. |
-| FR-008 Delete Account | `DELETE /api/auth/account` | 1) Call Supabase `auth.admin.deleteUser`. 2) Cascade deletes via FK `ON DELETE CASCADE`. |
-| FR-013 Secure Session | Middleware enforces JWT; endpoints double-check `user_id`.
+
+| Feature (PRD)             | Endpoint(s)                                                                      | Logic                                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-002 CRUD Trip Notes    | `/api/trip-notes*`                                                               | Standard CRUD with RLS & validation.                                                                                                                                                                                                                                                                                                                              |
+| FR-004 Generate Itinerary | `POST /api/trip-notes/generateItenerary`                                         | 1.) Validate note exists in database. 2) Get preferences (if any) from database. 3) Call AI service asynchronously with list of preferences and a trip note object and await response. 4) On success: store itinerary and add `ai_generation_job` with `succeeded` status + duration. 5) On failure: add `ai_generation_job` with `failed` status and error text. |
+| FR-006 Persist Plan       | Occurs within the generation endpoint (step 3 above).                            |
+| FR-007 Retry on Failure   | If job status `failed`, frontend displays `errorText` & allows re-POST generate. |
+| FR-008 Delete Account     | `DELETE /api/auth/account`                                                       | 1) Call Supabase `auth.admin.deleteUser`. 2) Cascade deletes via FK `ON DELETE CASCADE`.                                                                                                                                                                                                                                                                          |
+| FR-013 Secure Session     | Middleware enforces JWT; endpoints double-check `user_id`.                       |
 
 ---
 
 ### 4.3 Pagination, Filtering & Sorting
+
 - Cursor or offset pagination supported (offset shown above for simplicity). Cursor pagination optional via `cursor` & `limit` params.
 - Filtering parameters documented per list endpoint; unspecified params ignored.
 - Sorting uses `sort` query with `-` prefix for descending order.
 
 ### 4.4 Error Handling (Common)
-| Code | Meaning |
-|------|---------|
-| 400 | Invalid input (message array of validation errors) |
-| 401 | Missing/invalid JWT |
-| 403 | Authenticated but not allowed (should not occur w/ RLS) |
-| 404 | Resource not found or not owned by user |
-| 409 | Conflict (e.g., unique constraint) |
-| 429 | Rate limit exceeded |
-| 500 | Unhandled server error |
+
+| Code | Meaning                                                 |
+| ---- | ------------------------------------------------------- |
+| 400  | Invalid input (message array of validation errors)      |
+| 401  | Missing/invalid JWT                                     |
+| 403  | Authenticated but not allowed (should not occur w/ RLS) |
+| 404  | Resource not found or not owned by user                 |
+| 409  | Conflict (e.g., unique constraint)                      |
+| 429  | Rate limit exceeded                                     |
+| 500  | Unhandled server error                                  |
 
 ---
 
 ## 5. Non-Functional Considerations
-- **Documentation**: OpenAPI 3 spec generated from Zod schemas & served at `/api/docs` (Swagger UI).
 
+- **Documentation**: OpenAPI 3 spec generated from Zod schemas & served at `/api/docs` (Swagger UI).

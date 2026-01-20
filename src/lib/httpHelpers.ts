@@ -11,8 +11,8 @@
  * @param details - Optional additional error details
  * @returns Response object with JSON error body
  */
-export function createErrorResponse(status: number, message: string, details?: Record<string, any>): Response {
-  const body: { message: string; details?: Record<string, any> } = { message };
+export function createErrorResponse(status: number, message: string, details?: Record<string, unknown>): Response {
+  const body: { message: string; details?: Record<string, unknown> } = { message };
 
   if (details) {
     body.details = details;

@@ -26,7 +26,7 @@ function entityToDTO(entity: UserPreferenceEntity): UserPreferenceDTO {
  * Preferences Service
  * Provides methods for fetching user preferences
  */
-export class PreferencesService {
+export const PreferencesService = {
   /**
    * Lists all preferences for a given user
    * Used to enrich AI prompts with user's saved preferences
@@ -36,7 +36,7 @@ export class PreferencesService {
    * @returns Promise<UserPreferenceDTO[]> - Array of user preferences in DTO format
    * @throws InternalServerError if database operation fails
    */
-  static async listByUser(userId: string, supabase: SupabaseClient): Promise<UserPreferenceDTO[]> {
+  async listByUser(userId: string, supabase: SupabaseClient): Promise<UserPreferenceDTO[]> {
     const { data, error } = await supabase
       .from("user_preferences")
       .select("*")
@@ -56,5 +56,5 @@ export class PreferencesService {
 
     // Transform all entities to DTOs
     return data.map(entityToDTO);
-  }
-}
+  },
+};

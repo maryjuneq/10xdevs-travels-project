@@ -93,7 +93,7 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
 
     // Return updated itinerary DTO
     return createJsonResponse(updatedItinerary);
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Log error for debugging
     console.error("Error in PUT /api/itineraries/{id}:", error);
 

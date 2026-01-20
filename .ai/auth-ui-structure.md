@@ -70,22 +70,23 @@ Pages (Astro SSR)
 
 ## Route Map
 
-| Route | Page File | Component Mode | Purpose |
-|-------|-----------|----------------|---------|
-| `/login` | `pages/login.astro` | `mode="login"` | Email + password sign-in |
-| `/register` | `pages/register.astro` | `mode="register"` | New account creation |
-| `/password-reset` | `pages/password-reset.astro` | `mode="reset"` | Request reset email |
-| `/password-reset/:token` | `pages/password-reset/[token].astro` | `mode="reset-confirm"` | Set new password |
+| Route                    | Page File                            | Component Mode         | Purpose                  |
+| ------------------------ | ------------------------------------ | ---------------------- | ------------------------ |
+| `/login`                 | `pages/login.astro`                  | `mode="login"`         | Email + password sign-in |
+| `/register`              | `pages/register.astro`               | `mode="register"`      | New account creation     |
+| `/password-reset`        | `pages/password-reset.astro`         | `mode="reset"`         | Request reset email      |
+| `/password-reset/:token` | `pages/password-reset/[token].astro` | `mode="reset-confirm"` | Set new password         |
 
 ## Import Paths
 
 ### In Astro Pages
+
 ```astro
-import GuestLayout from "@/layouts/GuestLayout.astro";
-import { AuthForm } from "@/components/auth";
+import GuestLayout from "@/layouts/GuestLayout.astro"; import {AuthForm} from "@/components/auth";
 ```
 
 ### In React Components
+
 ```tsx
 import { Button } from "@/components/ui/button";
 import { InputField, PasswordField, FormError, FormSuccess } from "@/components/forms";
@@ -126,7 +127,7 @@ These will be implemented in the next phase (backend implementation).
 ✅ **Password visibility toggle** for usability  
 ✅ **Account deletion dialog** with confirmation  
 ✅ **Zero linter errors** - production ready  
-✅ **TypeScript** strict typing throughout  
+✅ **TypeScript** strict typing throughout
 
 ---
 

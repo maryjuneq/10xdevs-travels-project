@@ -50,7 +50,6 @@ function TripNoteDetailPageContent({ id }: TripNoteDetailPageProps) {
     isSaving,
     isGenerating,
     isUpdatingItinerary,
-    saveError,
     generateError,
   } = useTripNote(currentNoteId || 0);
 
@@ -168,15 +167,6 @@ function TripNoteDetailPageContent({ id }: TripNoteDetailPageProps) {
   };
 
   // No longer needed - form submission is triggered directly
-
-  const closeGenerationModal = () => {
-    if (!isGenerating) {
-      setGenerationState({
-        isGenerating: false,
-        error: undefined,
-      });
-    }
-  };
 
   if (isLoading) {
     return (

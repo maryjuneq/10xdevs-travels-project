@@ -3,21 +3,26 @@
 ## Issues Identified
 
 ### 1. Supabase Client Environment Variables in Browser
+
 **Problem**: The `AuthForm.tsx` component was importing `supabaseClient` which uses server-side environment variables (`SUPABASE_URL` and `SUPABASE_KEY`) that are not available in the browser. This caused the error: "supabaseUrl is required."
 
 **Root Cause**: In Astro, environment variables must be prefixed with `PUBLIC_` to be accessible in client-side code.
 
-**Solution**: 
+**Solution**:
+
 - Created a new browser-safe Supabase client at `src/db/supabase.browser.ts` that uses `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY`
 - Updated `AuthForm.tsx` to import and use `supabaseBrowser` instead of `supabaseClient`
 
 ### 2. Session Tokens in Response Body
+
 **Problem**: The `/api/auth/login` and `/api/auth/register` endpoints were returning access and refresh tokens in the JSON response body. This is a security concern as:
+
 - Tokens could be intercepted and logged by browser extensions or third-party scripts
 - Requires client-side code to handle token storage (vulnerable to XSS)
 - Not following security best practices for token management
 
 **Solution**:
+
 - Updated both endpoints to set tokens as **HTTP-only cookies**
 - Cookies are configured with:
   - `HttpOnly`: Cannot be accessed by JavaScript (XSS protection)
@@ -31,18 +36,21 @@
 The following environment variables must be configured:
 
 ### Server-side (Backend/API):
+
 ```bash
 SUPABASE_URL=your_supabase_project_url
 SUPABASE_KEY=your_supabase_service_role_key
 ```
 
 ### Client-side (Browser/Frontend):
+
 ```bash
 PUBLIC_SUPABASE_URL=your_supabase_project_url
 PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_public_key
 ```
 
-**Important**: 
+**Important**:
+
 - The `PUBLIC_` prefix is required for Astro to expose variables to client-side code
 - Use the **anon/public key** for client-side, NOT the service role key
 - The service role key should only be used server-side and never exposed to the browser
@@ -51,7 +59,6 @@ PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_public_key
 
 1. **Created**: `src/db/supabase.browser.ts`
    - New browser-safe Supabase client with proper env variable usage
-   
 2. **Modified**: `src/components/auth/AuthForm.tsx`
    - Changed import from `supabaseClient` to `supabaseBrowser`
    - Updated `getSession()` call to use browser client
@@ -59,7 +66,6 @@ PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_public_key
 3. **Modified**: `src/pages/api/auth/login.ts`
    - Now sets HTTP-only cookies for session management
    - Removed tokens from response body
-   
 4. **Modified**: `src/pages/api/auth/register.ts`
    - Now sets HTTP-only cookies for session management
    - Removed tokens from response body

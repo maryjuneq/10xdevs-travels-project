@@ -5,7 +5,7 @@
  */
 
 import type { SupabaseClient } from "../../db/supabase.client";
-import type { TablesInsert } from "../../db/database.types";
+import type { Tables, TablesInsert } from "../../db/database.types";
 import type { ItineraryEntity, ItineraryDTO } from "../../types";
 import { InternalServerError } from "../errors";
 
@@ -30,7 +30,7 @@ function entityToDTO(entity: ItineraryEntity): ItineraryDTO {
  * Itineraries Service
  * Provides methods for CRUD operations on itineraries
  */
-export class ItinerariesService {
+export const ItinerariesService = {
   /**
    * Creates a new itinerary for a trip note
    *
@@ -43,7 +43,7 @@ export class ItinerariesService {
    * @returns Promise<ItineraryDTO> - The created itinerary in DTO format
    * @throws InternalServerError if database operation fails
    */
-  static async create(
+  async create(
     tripNoteId: number,
     itinerary: string,
     userId: string,
@@ -75,7 +75,7 @@ export class ItinerariesService {
 
     // Transform entity to DTO
     return entityToDTO(data);
-  }
+  },
 
   /**
    * Finds an itinerary by trip note ID
@@ -85,7 +85,7 @@ export class ItinerariesService {
    * @returns Promise<ItineraryEntity | null> - The itinerary entity or null if not found
    * @throws InternalServerError if database operation fails
    */
-  static async findByTripNoteId(tripNoteId: number, supabase: SupabaseClient): Promise<ItineraryEntity | null> {
+  async findByTripNoteId(tripNoteId: number, supabase: SupabaseClient): Promise<ItineraryEntity | null> {
     const { data, error } = await supabase.from("itineraries").select("*").eq("trip_note_id", tripNoteId).single();
 
     if (error) {
@@ -98,7 +98,7 @@ export class ItinerariesService {
     }
 
     return data;
-  }
+  },
 
   /**
    * Updates an existing itinerary
@@ -112,7 +112,7 @@ export class ItinerariesService {
    * @returns Promise<ItineraryDTO> - The updated itinerary in DTO format
    * @throws InternalServerError if database operation fails
    */
-  static async update(
+  async update(
     id: number,
     itinerary: string,
     manuallyEdited: boolean,
@@ -120,7 +120,7 @@ export class ItinerariesService {
     suggestedTripLength?: number | null,
     suggestedBudget?: string | null
   ): Promise<ItineraryDTO> {
-    const updateData: any = {
+    const updateData: Partial<Tables<"itineraries">> = {
       itinerary,
       manually_edited: manuallyEdited,
     };
@@ -147,5 +147,5 @@ export class ItinerariesService {
     }
 
     return entityToDTO(data);
-  }
-}
+  },
+};

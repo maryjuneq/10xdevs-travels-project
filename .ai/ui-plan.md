@@ -12,16 +12,17 @@ Supporting domains include Authentication (Supabase) and Account Management. Eac
 
 ## 2. View List
 
-| # | View Name | Path | Main Purpose | Key Information / Components | UX / A11y / Security Notes |
-|---|-----------|------|--------------|-----------------------------|---------------------------|
-| 1 | Dashboard | `/` | Provide an overview of all Trip Notes and quick access to core actions. | • NoteTable (destination, earliest date, length, badge if itinerary exists)  
+| #   | View Name | Path | Main Purpose                                                            | Key Information / Components                                                | UX / A11y / Security Notes |
+| --- | --------- | ---- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------- | -------------------------- |
+| 1   | Dashboard | `/`  | Provide an overview of all Trip Notes and quick access to core actions. | • NoteTable (destination, earliest date, length, badge if itinerary exists) |
+
 • Sort & filter bar (destination, date range, itinerary-only toggle)  
 • Primary CTA buttons: “Add Note”, “Manage Preferences” | • Keyboard-navigable table rows  
 • `aria-label` on itinerary badge  
 • Data fetched via `GET /api/trip-notes` with React Query; page & filter params mirror URL search params. |
 | 2 | Trip Note Detail | `/trip-notes/:id` | Enable creating, viewing, and editing a Trip Note and its generated itinerary in a two-pane layout. | • ResizablePanelGroup with NoteForm (left) and ItineraryForm (right)  
 • Primary Action Button (Save / Save & Generate)  
-• Switch for manual edit on generated itenerary (visible only when itenerary exists) 
+• Switch for manual edit on generated itenerary (visible only when itenerary exists)
 • GenerationModal overlay (timer, progress)  
 • DeleteNoteButton with confirmation | • Split-pane fully keyboard draggable via Shadcn accessibility hooks  
 • Form inputs use `label` & error messages mapped from `400` responses  
@@ -53,17 +54,17 @@ Supporting domains include Authentication (Supabase) and Account Management. Eac
 
 ### Primary Flow – From Idea to Itinerary
 
-1. **Landing on Dashboard** (`/`) – user sees existing Trip Notes.  
-2. **Add Note** – clicks “Add Note” → **Add Trip Note** (`/trip-notes/new`).  
+1. **Landing on Dashboard** (`/`) – user sees existing Trip Notes.
+2. **Add Note** – clicks “Add Note” → **Add Trip Note** (`/trip-notes/new`).
 3. **Create Note** – fills in destination, dates, etc. → clicks “Save Note”.  
-   • Backend `POST /api/trip-notes` returns new ID; React Query cache invalidated.  
-4. **Return to Note Detail** (`/trip-notes/:id`) – left pane editable, right pane placeholder. Primary button now “Save & Generate”.  
+   • Backend `POST /api/trip-notes` returns new ID; React Query cache invalidated.
+4. **Return to Note Detail** (`/trip-notes/:id`) – left pane editable, right pane placeholder. Primary button now “Save & Generate”.
 5. **Generate Itinerary** – click triggers GenerationModal; UI locked.  
-   • POST `/api/trip-notes/generateItenerary`  
-6. **View Itinerary** – on success modal closes, right pane populated with read-only itinerary; primary button becomes “Save & Regenerate”.  The switch appears over itenerary panel "Manual edit". 
-**Edit Itenerary** - If users swiches manual edit switch, itenerary becomes editable. When users edits the itenerary text details, on blur it saves changes by calling `PUT api/iteneraries/{id}`.
-7. **Navigate Back** – back arrow or breadcrumb → Dashboard shows badge on edited note.  
-8. **Manage Preferences** (optional) – Dashboard “Manage Preferences” → Preferences grid; creates/deletes tiles.  
+   • POST `/api/trip-notes/generateItenerary`
+6. **View Itinerary** – on success modal closes, right pane populated with read-only itinerary; primary button becomes “Save & Regenerate”. The switch appears over itenerary panel "Manual edit".
+   **Edit Itenerary** - If users swiches manual edit switch, itenerary becomes editable. When users edits the itenerary text details, on blur it saves changes by calling `PUT api/iteneraries/{id}`.
+7. **Navigate Back** – back arrow or breadcrumb → Dashboard shows badge on edited note.
+8. **Manage Preferences** (optional) – Dashboard “Manage Preferences” → Preferences grid; creates/deletes tiles.
 9. **Account Settings** (optional) – User menu → Delete Account confirmation.
 
 ### Alternate / Error Paths
@@ -77,32 +78,33 @@ Supporting domains include Authentication (Supabase) and Account Management. Eac
 • **Top Navigation Bar** – Logo (Dashboard), optional user menu (Login/Logout, Account).  
 • **Sidebar** – not needed for MVP (simple flow).  
 • **Breadcrumbs** – appear on Note Detail (`Dashboard / Destination`).  
-• **Routing** – Astro file routes with React islands:  
-  - `/index.astro` – Dashboard  
-  - `/trip-notes/[id].astro` – wraps Trip Note React island  
-  - `/preferences.astro`  
-  - Auth pages under `/auth/*.astro`  
-• **Modal Portals** – GenerationModal and confirmation dialogs rendered to `#modal-root` outside stacking context.
+• **Routing** – Astro file routes with React islands:
+
+- `/index.astro` – Dashboard
+- `/trip-notes/[id].astro` – wraps Trip Note React island
+- `/preferences.astro`
+- Auth pages under `/auth/*.astro`  
+  • **Modal Portals** – GenerationModal and confirmation dialogs rendered to `#modal-root` outside stacking context.
 
 Navigation interactions adhere to SPA rules: client-side link elements (`<a>` with `aria-current`) and React Router’s `useNavigate` for programmatic transitions. UnsavedPrompt uses React Router’s unstable `useBlocker` + custom dialog.
 
 ## 5. Key Components
 
-| Component | Description | Reuse Locations |
-|-----------|-------------|-----------------|
-| **NoteTable** | Paginated, sortable table of Trip Notes. | Dashboard |
-| **NoteCard / Row** | Presents destination, date, badge. | NoteTable |
-| **ItineraryBadge** | Green checkmark with `aria-label="has itinerary"`. | Note rows |
-| **NoteForm** | Controlled form with destination, dates(“Flexible dates?” checkbox shows both earliest & latest pickers; if unchecked, latest date auto-mirrors earliest.), group size, budget, details. | Add & Detail views |
-| **PrimaryActionButton** | Context-aware CTA (Save / Generate / Save & Regenerate). | Note Detail |
-| **IteneraryForm** | Controlled form “Manual edit” switch; if switched on, itenerary text becomes editable and is automatically saved on loosing focus. | |
-| **ResizablePanelGroup** | Shadcn/ui wrapper providing accessible split-pane. | Note Detail |
-| **GenerationModal** | Full-screen overlay displaying spinner and elapsed timer. | Note Detail (portal) |
-| **DateRangePicker** | `react-day-picker` based component supporting flexible vs fixed dates. | NoteForm |
-| **PreferenceTile** | Card showing category icon + text; deletable. | Preferences |
-| **AddPreferenceCard** | Last tile with “+” icon to open modal. | Preferences |
-| **ConfirmationDialog** | Re-usable yes/no or text-entry confirmation. | Delete note, delete preference, delete account |
-| **UnsavedPrompt** | Blocks navigation when dirty forms exist. | Note Detail |
+| Component               | Description                                                                                                                                                                              | Reuse Locations                                |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| **NoteTable**           | Paginated, sortable table of Trip Notes.                                                                                                                                                 | Dashboard                                      |
+| **NoteCard / Row**      | Presents destination, date, badge.                                                                                                                                                       | NoteTable                                      |
+| **ItineraryBadge**      | Green checkmark with `aria-label="has itinerary"`.                                                                                                                                       | Note rows                                      |
+| **NoteForm**            | Controlled form with destination, dates(“Flexible dates?” checkbox shows both earliest & latest pickers; if unchecked, latest date auto-mirrors earliest.), group size, budget, details. | Add & Detail views                             |
+| **PrimaryActionButton** | Context-aware CTA (Save / Generate / Save & Regenerate).                                                                                                                                 | Note Detail                                    |
+| **IteneraryForm**       | Controlled form “Manual edit” switch; if switched on, itenerary text becomes editable and is automatically saved on loosing focus.                                                       |                                                |
+| **ResizablePanelGroup** | Shadcn/ui wrapper providing accessible split-pane.                                                                                                                                       | Note Detail                                    |
+| **GenerationModal**     | Full-screen overlay displaying spinner and elapsed timer.                                                                                                                                | Note Detail (portal)                           |
+| **DateRangePicker**     | `react-day-picker` based component supporting flexible vs fixed dates.                                                                                                                   | NoteForm                                       |
+| **PreferenceTile**      | Card showing category icon + text; deletable.                                                                                                                                            | Preferences                                    |
+| **AddPreferenceCard**   | Last tile with “+” icon to open modal.                                                                                                                                                   | Preferences                                    |
+| **ConfirmationDialog**  | Re-usable yes/no or text-entry confirmation.                                                                                                                                             | Delete note, delete preference, delete account |
+| **UnsavedPrompt**       | Blocks navigation when dirty forms exist.                                                                                                                                                | Note Detail                                    |
 
 ---
 
@@ -117,16 +119,15 @@ Navigation interactions adhere to SPA rules: client-side link elements (`<a>` wi
 
 ### Requirements & User Story Mapping
 
-| PRD User Story | UI Element(s) / View | Notes |
-|----------------|----------------------|-------|
-| US-001, US-002 | Login & Register views | Supabase Auth forms |
-| US-003 – US-006 | Dashboard, Add & Detail views, ConfirmationDialog | Full CRUD paths |
-| US-007 | Preferences view | Tile grid CRUD |
-| US-008 | PrimaryActionButton + GenerationModal | 60 s SLA feedback |
-| US-009 | Error toast + retry path | Modal closes on error |
-| US-010 | Editable itinerary |  |
-| US-011 | Account Deletion view / dialog | Cascade deletion confirmation |
-| US-013 | Middleware + React Query hooks | All protected routes check JWT |
+| PRD User Story  | UI Element(s) / View                              | Notes                          |
+| --------------- | ------------------------------------------------- | ------------------------------ |
+| US-001, US-002  | Login & Register views                            | Supabase Auth forms            |
+| US-003 – US-006 | Dashboard, Add & Detail views, ConfirmationDialog | Full CRUD paths                |
+| US-007          | Preferences view                                  | Tile grid CRUD                 |
+| US-008          | PrimaryActionButton + GenerationModal             | 60 s SLA feedback              |
+| US-009          | Error toast + retry path                          | Modal closes on error          |
+| US-010          | Editable itinerary                                |                                |
+| US-011          | Account Deletion view / dialog                    | Cascade deletion confirmation  |
+| US-013          | Middleware + React Query hooks                    | All protected routes check JWT |
 
 Every functional requirement is backed by at least one view and component, ensuring tight coupling between the UI and API capabilities while keeping future extensibility in mind.
-

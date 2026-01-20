@@ -118,14 +118,14 @@ describe("/api/trip-notes/generateItenerary", () => {
   const mockPreferences: UserPreferenceDTO[] = [
     {
       id: 1,
-      category: "travel_style" as any,
+      category: "culture",
       preferenceText: "cultural",
       createdAt: "2024-01-01T00:00:00Z",
       updatedAt: "2024-01-01T00:00:00Z",
     },
     {
       id: 2,
-      category: "pace" as any,
+      category: "adventure",
       preferenceText: "moderate",
       createdAt: "2024-01-01T00:00:00Z",
       updatedAt: "2024-01-01T00:00:00Z",
@@ -184,9 +184,9 @@ describe("/api/trip-notes/generateItenerary", () => {
 
   const buildContext = (localsOverride?: Partial<typeof mockLocals>) =>
     ({
-      request: mockRequest as any,
+      request: mockRequest as unknown as Request,
       locals: { ...mockLocals, ...localsOverride },
-    }) as any;
+    }) as Parameters<typeof POST>[0];
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -477,7 +477,7 @@ describe("/api/trip-notes/generateItenerary", () => {
 
       expect(JobsService.logFailed).toHaveBeenCalledWith(
         1,
-        "AI generation failed: AI service timeout",
+        "AI generation failed: AI service timeout.",
         "user-123",
         mockSupabase,
         1000
@@ -584,7 +584,7 @@ describe("/api/trip-notes/generateItenerary", () => {
 
     it("should continue despite job logging failure", async () => {
       const { createJsonResponse } = await import("../../../lib/httpHelpers");
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
 
       mockRequest.json.mockResolvedValue(validRequestBody);
       vi.mocked(TripNotesService.findById).mockResolvedValue(mockTripNoteEntity);
@@ -687,7 +687,7 @@ describe("/api/trip-notes/generateItenerary", () => {
 
     it("should handle errors when tripNoteId is not available", async () => {
       const { createErrorResponse } = await import("../../../lib/httpHelpers");
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
 
       // Simulate error before tripNoteId is set
       mockRequest.json.mockRejectedValue(new Error("Invalid JSON"));
@@ -702,7 +702,7 @@ describe("/api/trip-notes/generateItenerary", () => {
 
     it("should handle job logging errors gracefully", async () => {
       const { createErrorResponse } = await import("../../../lib/httpHelpers");
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
 
       mockRequest.json.mockResolvedValue(validRequestBody);
       vi.mocked(TripNotesService.findById).mockRejectedValue(new Error("Unexpected error"));
@@ -718,7 +718,7 @@ describe("/api/trip-notes/generateItenerary", () => {
 
     it("should handle job logging errors gracefully when logging fails", async () => {
       const { createErrorResponse } = await import("../../../lib/httpHelpers");
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
 
       mockRequest.json.mockResolvedValue(validRequestBody);
       vi.mocked(TripNotesService.findById).mockRejectedValue(new Error("Unexpected error"));

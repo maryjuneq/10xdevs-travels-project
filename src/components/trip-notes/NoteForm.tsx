@@ -36,10 +36,9 @@ export function NoteForm({ initialValues, onSubmit, disabled = false, children, 
   const {
     register,
     handleSubmit,
-    formState: { errors, isDirty, isSubmitting, isValid },
+    formState: { errors, isDirty, isValid },
     setValue,
     watch,
-    trigger,
   } = useForm<CreateTripNoteCommand>({
     resolver: zodResolver(CreateTripNoteSchema),
     mode: "onChange", // Validate on change to update isValid
@@ -64,8 +63,10 @@ export function NoteForm({ initialValues, onSubmit, disabled = false, children, 
 
   // Create a submit handler that can be called from outside the form
   const triggerSubmit = React.useCallback(() => {
-    handleSubmit(handleFormSubmit)();
-  }, [handleSubmit]);
+    handleSubmit(async (data: CreateTripNoteCommand) => {
+      await onSubmit(data);
+    })();
+  }, [handleSubmit, onSubmit]);
 
   // Watch for flexible dates toggle
   const earliestStartDate = watch("earliestStartDate");
@@ -111,12 +112,13 @@ export function NoteForm({ initialValues, onSubmit, disabled = false, children, 
     }
   }, [earliestStartDate, flexibleDates, latestStartDate, setValue]);
 
-  const handleFormSubmit = async (data: CreateTripNoteCommand) => {
-    await onSubmit(data);
-  };
-
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6 p-6">
+    <form
+      onSubmit={handleSubmit(async (data: CreateTripNoteCommand) => {
+        await onSubmit(data);
+      })}
+      className="space-y-6 p-6"
+    >
       <div className="space-y-4">
         {/* Destination */}
         <div className="space-y-2">

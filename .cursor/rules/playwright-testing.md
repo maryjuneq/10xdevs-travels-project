@@ -20,4 +20,3 @@ description: This is a new rule
 - Implement test hooks for setup and teardown
 - Use expect assertions with specific matchers
 - Leverage parallel execution for faster test runs
-

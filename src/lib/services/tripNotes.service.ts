@@ -5,7 +5,7 @@
  */
 
 import type { SupabaseClient } from "../../db/supabase.client";
-import type { TablesInsert, TablesUpdate } from "../../db/database.types";
+import type { Tables, TablesInsert, TablesUpdate } from "../../db/database.types";
 import type {
   CreateTripNoteCommand,
   UpdateTripNoteCommand,
@@ -18,6 +18,36 @@ import type {
   LightItineraryDTO,
 } from "../../types";
 import { NotFoundError, ForbiddenError, ValidationError, InternalServerError, ConflictError } from "../errors";
+
+interface TripNotesServiceContract {
+  createTripNote: (command: CreateTripNoteCommand, userId: string, supabase: SupabaseClient) => Promise<TripNoteDTO>;
+  findById: (id: number, supabase: SupabaseClient) => Promise<TripNoteEntity | null>;
+  assertBelongsToUser: (tripNote: TripNoteEntity | null, userId: string) => asserts tripNote is TripNoteEntity;
+  updateIfChanged: (
+    id: number,
+    command: CreateTripNoteCommand,
+    userId: string,
+    supabase: SupabaseClient
+  ) => Promise<TripNoteEntity>;
+  toPromptDTO: (entity: TripNoteEntity) => TripNoteDTO;
+  getOneWithItinerary: (
+    userId: string,
+    id: number,
+    supabase: SupabaseClient
+  ) => Promise<TripNoteWithItineraryDTO | null>;
+  updateTripNote: (
+    id: number,
+    command: UpdateTripNoteCommand,
+    userId: string,
+    supabase: SupabaseClient
+  ) => Promise<TripNoteWithItineraryDTO>;
+  deleteTripNote: (id: number, userId: string, supabase: SupabaseClient) => Promise<void>;
+  listTripNotes: (
+    query: TripNotesListQuery,
+    userId: string,
+    supabase: SupabaseClient
+  ) => Promise<PaginatedResponse<TripNoteListItemDTO>>;
+}
 
 /**
  * Transforms a CreateTripNoteCommand (camelCase) to database insert format (snake_case)
@@ -76,7 +106,9 @@ function entityToDTO(entity: TripNoteEntity): TripNoteDTO {
  * Transforms itinerary data to LightItineraryDTO (camelCase)
  * Only includes essential fields for detail view
  */
-function itineraryToLightDTO(data: any): LightItineraryDTO {
+type LightItineraryRow = Pick<Tables<"itineraries">, "id" | "suggested_trip_length" | "suggested_budget" | "itinerary">;
+
+function itineraryToLightDTO(data: LightItineraryRow): LightItineraryDTO {
   return {
     id: data.id,
     suggestedTripLength: data.suggested_trip_length,
@@ -89,7 +121,7 @@ function itineraryToLightDTO(data: any): LightItineraryDTO {
  * Trip Notes Service
  * Provides methods for CRUD operations on trip notes
  */
-export class TripNotesService {
+export const TripNotesService: TripNotesServiceContract = {
   /**
    * Creates a new trip note
    *
@@ -99,11 +131,7 @@ export class TripNotesService {
    * @returns Promise<TripNoteDTO> - The created trip note in DTO format
    * @throws InternalServerError if database operation fails
    */
-  static async createTripNote(
-    command: CreateTripNoteCommand,
-    userId: string,
-    supabase: SupabaseClient
-  ): Promise<TripNoteDTO> {
+  async createTripNote(command: CreateTripNoteCommand, userId: string, supabase: SupabaseClient): Promise<TripNoteDTO> {
     // Transform command to database insert format
     const insertData = commandToInsert(command, userId);
 
@@ -122,7 +150,7 @@ export class TripNotesService {
 
     // Transform entity to DTO
     return entityToDTO(data);
-  }
+  },
 
   /**
    * Finds a trip note by ID
@@ -132,7 +160,7 @@ export class TripNotesService {
    * @returns Promise<TripNoteEntity | null> - The trip note entity or null if not found
    * @throws InternalServerError if database operation fails
    */
-  static async findById(id: number, supabase: SupabaseClient): Promise<TripNoteEntity | null> {
+  async findById(id: number, supabase: SupabaseClient): Promise<TripNoteEntity | null> {
     const { data, error } = await supabase.from("trip_notes").select("*").eq("id", id).single();
 
     if (error) {
@@ -145,7 +173,7 @@ export class TripNotesService {
     }
 
     return data;
-  }
+  },
 
   /**
    * Asserts that a trip note belongs to the specified user
@@ -154,11 +182,11 @@ export class TripNotesService {
    * @param userId - The authenticated user ID
    * @throws NotFoundError if trip note doesn't exist or doesn't belong to user
    */
-  static assertBelongsToUser(tripNote: TripNoteEntity | null, userId: string): asserts tripNote is TripNoteEntity {
+  assertBelongsToUser(tripNote: TripNoteEntity | null, userId: string): asserts tripNote is TripNoteEntity {
     if (!tripNote || tripNote.user_id !== userId) {
       throw new NotFoundError("Trip note not found");
     }
-  }
+  },
 
   /**
    * Updates a trip note if the command contains different values
@@ -175,15 +203,15 @@ export class TripNotesService {
    * @throws ValidationError if destination has changed (immutable field)
    * @throws InternalServerError if database operation fails
    */
-  static async updateIfChanged(
+  async updateIfChanged(
     id: number,
     command: CreateTripNoteCommand,
     userId: string,
     supabase: SupabaseClient
   ): Promise<TripNoteEntity> {
     // Fetch current trip note
-    const current = await this.findById(id, supabase);
-    this.assertBelongsToUser(current, userId);
+    const current = await TripNotesService.findById(id, supabase);
+    TripNotesService.assertBelongsToUser(current, userId);
 
     // Validate that destination has NOT changed (immutable field)
     if (current.destination !== command.destination) {
@@ -221,7 +249,7 @@ export class TripNotesService {
     }
 
     return data;
-  }
+  },
 
   /**
    * Converts a trip note entity to a DTO suitable for AI prompt
@@ -229,9 +257,9 @@ export class TripNotesService {
    * @param entity - The trip note entity
    * @returns TripNoteDTO - The trip note in DTO format
    */
-  static toPromptDTO(entity: TripNoteEntity): TripNoteDTO {
+  toPromptDTO(entity: TripNoteEntity): TripNoteDTO {
     return entityToDTO(entity);
-  }
+  },
 
   /**
    * Fetches a single trip note with its itinerary (if exists) for the authenticated user
@@ -245,7 +273,7 @@ export class TripNotesService {
    * @returns Promise<TripNoteWithItineraryDTO | null> - Trip note with embedded itinerary, or null if not found/not owned
    * @throws InternalServerError if database operation fails
    */
-  static async getOneWithItinerary(
+  async getOneWithItinerary(
     userId: string,
     id: number,
     supabase: SupabaseClient
@@ -315,7 +343,7 @@ export class TripNotesService {
       ...tripNoteDTO,
       itinerary: itineraryDTO,
     };
-  }
+  },
 
   /**
    * Updates an existing trip note and returns it with its itinerary
@@ -335,7 +363,7 @@ export class TripNotesService {
    * @throws ConflictError if unique constraint violation occurs
    * @throws InternalServerError if database operation fails
    */
-  static async updateTripNote(
+  async updateTripNote(
     id: number,
     command: UpdateTripNoteCommand,
     userId: string,
@@ -418,7 +446,7 @@ export class TripNotesService {
       ...tripNoteDTO,
       itinerary: itineraryDTO,
     };
-  }
+  },
 
   /**
    * Deletes a trip note belonging to the authenticated user
@@ -435,7 +463,7 @@ export class TripNotesService {
    * @throws ForbiddenError if trip note belongs to different user
    * @throws InternalServerError if database operation fails
    */
-  static async deleteTripNote(id: number, userId: string, supabase: SupabaseClient): Promise<void> {
+  async deleteTripNote(id: number, userId: string, supabase: SupabaseClient): Promise<void> {
     // Verify ownership: check that trip note exists and belongs to user
     const { data: ownershipCheck, error: checkError } = await supabase
       .from("trip_notes")
@@ -472,7 +500,7 @@ export class TripNotesService {
     }
 
     // Success - no return value needed
-  }
+  },
 
   /**
    * Lists trip notes for a user with pagination, filtering, and sorting
@@ -483,7 +511,7 @@ export class TripNotesService {
    * @returns Promise<PaginatedResponse<TripNoteListItemDTO>> - Paginated list of trip notes
    * @throws InternalServerError if database operation fails
    */
-  static async listTripNotes(
+  async listTripNotes(
     query: TripNotesListQuery,
     userId: string,
     supabase: SupabaseClient
@@ -525,7 +553,14 @@ export class TripNotesService {
     queryBuilder = queryBuilder.range(offset, offset + pageSize - 1);
 
     // Execute query
-    const { data, error, count } = await queryBuilder;
+    type TripNoteListRow = Pick<
+      Tables<"trip_notes">,
+      "id" | "destination" | "earliest_start_date" | "approximate_trip_length" | "created_at" | "updated_at"
+    > & {
+      itineraries: { id: number } | null;
+    };
+
+    const { data, error } = await queryBuilder.returns<TripNoteListRow[]>();
 
     // Handle database errors
     if (error) {
@@ -538,7 +573,7 @@ export class TripNotesService {
     }
 
     // Transform rows to TripNoteListItemDTO
-    let items: TripNoteListItemDTO[] = data.map((row: any) => ({
+    let items: TripNoteListItemDTO[] = data.map((row) => ({
       id: row.id,
       destination: row.destination,
       earliestStartDate: row.earliest_start_date,
@@ -570,5 +605,5 @@ export class TripNotesService {
       total,
       totalPages,
     };
-  }
-}
+  },
+};

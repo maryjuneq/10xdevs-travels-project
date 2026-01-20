@@ -26,6 +26,14 @@ import { JobsService } from "../../../lib/services/jobs.service";
 import { NotFoundError, ValidationError } from "../../../lib/errors";
 import { createErrorResponse, createJsonResponse } from "../../../lib/httpHelpers";
 
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return String(error);
+};
+
 /**
  * POST handler for generating itineraries
  */
@@ -67,7 +75,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     try {
       TripNotesService.assertBelongsToUser(tripNote, userId);
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof NotFoundError) {
         return createErrorResponse(404, "Trip note not found or access denied");
       }
@@ -78,7 +86,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     let updatedTripNote;
     try {
       updatedTripNote = await TripNotesService.updateIfChanged(id, tripNoteFields, userId, supabase);
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof ValidationError) {
         return createErrorResponse(400, "Validation failed", {
           destination: [error.message],
@@ -111,17 +119,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
     try {
       const tripNoteDTO = TripNotesService.toPromptDTO(updatedTripNote);
       aiResult = await AIService.generateItinerary(tripNoteDTO, preferences);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("AI generation error:", error);
+      const errorMessage = getErrorMessage(error);
       // Log failed job - AI generation error
       const durationMs = Math.round(performance.now() - startTime);
-      await JobsService.logFailed(
-        tripNoteId,
-        `AI generation failed: ${error.message || error}`,
-        userId,
-        supabase,
-        durationMs
-      );
+      await JobsService.logFailed(tripNoteId, `AI generation failed: ${errorMessage}.`, userId, supabase, durationMs);
 
       return createErrorResponse(500, "Failed to generate itinerary");
     }
@@ -152,12 +155,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
           aiResult.suggestedBudget
         );
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error persisting itinerary:", error);
+      const errorMessage = getErrorMessage(error);
       // Log failed job - database insert error
       await JobsService.logFailed(
         tripNoteId,
-        `Failed to persist itinerary: ${error.message || error}`,
+        `Failed to persist itinerary: ${errorMessage}`,
         userId,
         supabase,
         aiResult.durationMs
@@ -192,7 +196,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Return combined trip note with itinerary
     return createJsonResponse(response, 201);
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Catch-all error handler for unexpected errors
     console.error("Unexpected error in POST /api/trip-notes/generateItenerary:", error);
 
@@ -210,7 +214,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
         await JobsService.logFailed(
           tripNoteId,
-          `Unexpected error: ${error.message || error}`,
+          `Unexpected error: ${getErrorMessage(error)}`,
           userId,
           supabase,
           durationMs
@@ -221,7 +225,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     return createErrorResponse(500, "An unexpected error occurred", {
-      message: error.message || "Unknown error",
+      message: getErrorMessage(error),
     });
   }
 };

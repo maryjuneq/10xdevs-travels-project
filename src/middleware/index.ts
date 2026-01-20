@@ -41,7 +41,7 @@ function isPathAllowed(pathname: string, allowedPaths: string[]): boolean {
   });
 }
 
-export const onRequest = defineMiddleware(async ({ locals, cookies, url, request, redirect }, next) => {
+export const onRequest = defineMiddleware(async ({ locals, cookies, url, redirect }, next) => {
   // Attach Supabase client to locals
   locals.supabase = supabaseClient;
 
@@ -58,7 +58,7 @@ export const onRequest = defineMiddleware(async ({ locals, cookies, url, request
 
   if (accessToken && refreshToken) {
     // Set the session in Supabase client from cookies
-    const { data, error } = await supabaseClient.auth.setSession({
+    const { error } = await supabaseClient.auth.setSession({
       access_token: accessToken,
       refresh_token: refreshToken,
     });

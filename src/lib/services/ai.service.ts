@@ -37,24 +37,25 @@ export interface AIGenerationResult {
  * AI Service
  * Provides methods for AI-powered itinerary generation
  */
-export class AIService {
-  private static openRouterService: OpenRouterService | null = null;
 
+let openRouterService: OpenRouterService | null = null;
+
+export const AIService = {
   /**
    * Initializes the OpenRouter service with API key
    * Call this once at application startup
    *
    * @param apiKey - OpenRouter API key
    */
-  static initialize(apiKey: string): void {
-    this.openRouterService = new OpenRouterService({
+  initialize(apiKey: string): void {
+    openRouterService = new OpenRouterService({
       apiKey,
       defaultModel: "openai/gpt-oss-120b:free",
       defaultTemperature: 0.7,
       timeout: 120000, // 120 seconds (increased for longer responses)
       maxRetries: 3,
     });
-  }
+  },
 
   /**
    * Gets the OpenRouter service instance
@@ -62,12 +63,12 @@ export class AIService {
    * @returns OpenRouterService instance
    * @throws Error if service is not initialized
    */
-  private static getService(): OpenRouterService {
-    if (!this.openRouterService) {
+  getService(): OpenRouterService {
+    if (!openRouterService) {
       throw new Error("AIService not initialized. Call AIService.initialize() first.");
     }
-    return this.openRouterService;
-  }
+    return openRouterService;
+  },
 
   /**
    * Generates a travel itinerary based on trip note and user preferences
@@ -78,7 +79,7 @@ export class AIService {
    * @returns Promise<AIGenerationResult> - Generated itinerary with metadata
    * @throws Error if generation fails
    */
-  static async generateItinerary(
+  async generateItinerary(
     tripNote: TripNoteDTO,
     preferences: UserPreferenceDTO[],
     useMock = false
@@ -87,7 +88,7 @@ export class AIService {
 
     try {
       // Use mock implementation if requested or service not initialized
-      if (useMock || !this.openRouterService) {
+      if (useMock || !openRouterService) {
         return await this.generateMockItinerary(tripNote, preferences, startTime);
       }
 
@@ -126,7 +127,7 @@ export class AIService {
         `AI generation failed after ${durationMs}ms: ${error instanceof Error ? error.message : String(error)}`
       );
     }
-  }
+  },
 
   /**
    * Generates a mock itinerary for development and testing
@@ -136,7 +137,7 @@ export class AIService {
    * @param startTime - Start time for duration calculation
    * @returns Promise<AIGenerationResult> - Mock result with itinerary
    */
-  private static async generateMockItinerary(
+  async generateMockItinerary(
     tripNote: TripNoteDTO,
     preferences: UserPreferenceDTO[],
     startTime: number
@@ -169,7 +170,7 @@ ${prefSummary}
 
 ## Daily Itinerary
 
-${this.generateMockDays(approximateTripLength, destination)}
+${this.generateMockDays(approximateTripLength)}
 
 ## Travel Tips
 - Book accommodations in advance for the best rates
@@ -200,7 +201,7 @@ ${
       suggestedTripLength: approximateTripLength,
       suggestedBudget,
     };
-  }
+  },
 
   /**
    * Generates mock daily activities
@@ -209,7 +210,7 @@ ${
    * @param destination - Trip destination
    * @returns string - Formatted daily activities
    */
-  private static generateMockDays(days: number, destination: string): string {
+  generateMockDays(days: number): string {
     const activities = [
       "Explore local markets and try authentic cuisine",
       "Visit historical landmarks and museums",
@@ -231,7 +232,7 @@ ${
 ${dayParts.map((part) => `**${part}:** ${activity}`).join("\n")}
 `;
     }).join("\n");
-  }
+  },
 
   /**
    * Builds a prompt for the AI model
@@ -240,7 +241,7 @@ ${dayParts.map((part) => `**${part}:** ${activity}`).join("\n")}
    * @param preferences - User preferences
    * @returns string - Formatted prompt
    */
-  private static buildPrompt(tripNote: TripNoteDTO, preferences: UserPreferenceDTO[]): string {
+  buildPrompt(tripNote: TripNoteDTO, preferences: UserPreferenceDTO[]): string {
     const prefText =
       preferences.length > 0
         ? `\n\nUser Preferences:\n${preferences.map((p) => `- ${p.category}: ${p.preferenceText}`).join("\n")}`
@@ -279,5 +280,5 @@ Format the response in JSON, providing the following fields:
 - itinerary: string (well-structured day-by-day itinerary in Markdown format with daily breakdown, accommodations, dining, transportation, etc. Keep it concise but informative - aim for 100-200 words per day)
 - suggestedTripLength: number (realistic trip length in days based on your assessment)
 - suggestedBudget: string (Realistic budget per whole group in the currency provided or USD if not specified. This should be a short string, just a number and currency, keep the details in itinerary field)`;
-  }
-}
+  },
+};

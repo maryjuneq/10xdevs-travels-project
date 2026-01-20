@@ -10,9 +10,11 @@ This document summarizes the UI components and pages created for the authenticat
 ## 📁 Files Created
 
 ### Layouts
+
 - **`src/layouts/GuestLayout.astro`** - Layout for guest-only authentication pages with header, footer, and centered content area
 
 ### Validation Schemas
+
 - **`src/lib/schemas/auth.schema.ts`** - Zod validation schemas for all auth forms:
   - `loginSchema` - Email + password validation
   - `registerSchema` - Email + password + confirm password validation
@@ -22,6 +24,7 @@ This document summarizes the UI components and pages created for the authenticat
 ### React Components
 
 #### Form Components (`src/components/forms/`)
+
 - **`FormError.tsx`** - Displays error messages with alert icon
 - **`FormSuccess.tsx`** - Displays success messages with checkmark icon
 - **`InputField.tsx`** - Reusable text/email input with label, error, and helper text
@@ -29,6 +32,7 @@ This document summarizes the UI components and pages created for the authenticat
 - **`index.ts`** - Barrel export for all form components
 
 #### Auth Components (`src/components/auth/`)
+
 - **`AuthForm.tsx`** - Main authentication form component with 4 modes:
   - `mode="login"` - Email + password sign-in
   - `mode="register"` - Email + password + confirm password
@@ -38,6 +42,7 @@ This document summarizes the UI components and pages created for the authenticat
 - **`index.ts`** - Barrel export for auth components
 
 ### Pages (`src/pages/`)
+
 - **`login.astro`** - Sign in page at `/login`
 - **`register.astro`** - Account creation page at `/register`
 - **`password-reset.astro`** - Password reset request page at `/password-reset`
@@ -48,12 +53,14 @@ All pages use `export const prerender = false` for SSR and load the AuthForm com
 ## 🎨 Design Features
 
 ### Visual Design
+
 - Beautiful gradient backgrounds (blue-50 to indigo-100 in light mode)
 - Centered card layout with shadow for forms
 - Dark mode support throughout
 - Responsive design that works on all screen sizes
 
 ### User Experience
+
 - Real-time inline validation with helpful error messages
 - Password visibility toggle for better usability
 - Clear navigation between auth flows (login ↔ register ↔ reset)
@@ -61,6 +68,7 @@ All pages use `export const prerender = false` for SSR and load the AuthForm com
 - Success/error message banners with icons
 
 ### Accessibility
+
 - Semantic HTML with proper labels
 - ARIA attributes for screen readers (`aria-invalid`, `aria-describedby`, `role="alert"`)
 - Keyboard navigation support
@@ -70,6 +78,7 @@ All pages use `export const prerender = false` for SSR and load the AuthForm com
 ## 🔧 Technical Implementation
 
 ### React Best Practices
+
 ✅ Functional components with hooks  
 ✅ `useId()` for generating unique IDs for accessibility  
 ✅ `useCallback()` for optimized event handlers  
@@ -78,12 +87,14 @@ All pages use `export const prerender = false` for SSR and load the AuthForm com
 ✅ No "use client" directives (Astro-compatible)
 
 ### Validation Strategy
+
 - **Client-side**: Zod schemas validate input before submission
 - **Inline errors**: Field errors appear below inputs as user types
 - **Form-level errors**: Generic error messages appear at top of form
 - **No user enumeration**: Generic messages for security (e.g., "Invalid email or password")
 
 ### Form State Management
+
 - Controlled inputs with React state
 - Error state cleared on input change
 - Success/error messages managed independently
@@ -99,7 +110,9 @@ These UI components are **ready to be connected** to backend services. The AuthF
 4. ⏳ Needs integration with actual Supabase auth API
 
 ### Next Steps (Backend Integration)
+
 The following will be implemented in the next phase:
+
 - API endpoints in `src/pages/api/auth/`
 - Auth service in `src/lib/services/auth.service.ts`
 - Middleware enhancements in `src/middleware/index.ts`
@@ -109,6 +122,7 @@ The following will be implemented in the next phase:
 ## 📝 Usage Examples
 
 ### Using AuthForm in a Page
+
 ```astro
 ---
 import GuestLayout from "@/layouts/GuestLayout.astro";
@@ -123,6 +137,7 @@ export const prerender = false;
 ```
 
 ### Using DeleteAccountDialog
+
 ```tsx
 import { DeleteAccountDialog } from "@/components/auth";
 
@@ -142,6 +157,7 @@ function AccountSettings() {
 ```
 
 ### Using Form Components
+
 ```tsx
 import { InputField, PasswordField, FormError } from "@/components/forms";
 
@@ -149,8 +165,8 @@ function MyForm() {
   return (
     <form>
       <FormError message="Something went wrong" />
-      <InputField 
-        label="Email" 
+      <InputField
+        label="Email"
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
@@ -169,12 +185,12 @@ function MyForm() {
 
 ## ✅ Validation Rules
 
-| Field | Rules | Error Message |
-|-------|-------|---------------|
-| Email | RFC-5322, ≤254 chars | "Enter a valid email" |
-| Password (login) | Non-empty | "Password is required" |
+| Field                     | Rules                          | Error Message                                                 |
+| ------------------------- | ------------------------------ | ------------------------------------------------------------- |
+| Email                     | RFC-5322, ≤254 chars           | "Enter a valid email"                                         |
+| Password (login)          | Non-empty                      | "Password is required"                                        |
 | Password (register/reset) | ≥8 chars, ≥1 number, ≥1 letter | "Password must be at least 8 characters and contain a number" |
-| Confirm Password | Must match password | "Passwords don't match" |
+| Confirm Password          | Must match password            | "Passwords don't match"                                       |
 
 ## 🧪 Testing the UI
 
@@ -195,6 +211,7 @@ To test the authentication UI:
 ## 📦 Dependencies Used
 
 All dependencies were already present in the project:
+
 - `zod` - Schema validation
 - `lucide-react` - Icons (Eye, EyeOff, AlertCircle, CheckCircle, Trash2)
 - `@radix-ui/react-label` - Accessible label component

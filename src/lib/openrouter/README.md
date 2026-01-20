@@ -33,7 +33,7 @@ Get your API key from [https://openrouter.ai](https://openrouter.ai)
 The service is automatically initialized in `src/middleware/index.ts` on application startup:
 
 ```typescript
-import { AIService } from '../lib/services/ai.service';
+import { AIService } from "../lib/services/ai.service";
 
 AIService.initialize(import.meta.env.OPENROUTER_API_KEY);
 ```
@@ -43,19 +43,17 @@ AIService.initialize(import.meta.env.OPENROUTER_API_KEY);
 ### Basic Chat Completion
 
 ```typescript
-import { OpenRouterService } from '@/lib/openrouter';
+import { OpenRouterService } from "@/lib/openrouter";
 
-const service = new OpenRouterService({ 
+const service = new OpenRouterService({
   apiKey: import.meta.env.OPENROUTER_API_KEY,
-  defaultModel: 'openai/gpt-4o-mini',
+  defaultModel: "openai/gpt-4o-mini",
   timeout: 60000, // 60 seconds
 });
 
 const response = await service.chat({
-  system: 'You are a helpful assistant',
-  messages: [
-    { role: 'user', content: 'What is the capital of France?' }
-  ]
+  system: "You are a helpful assistant",
+  messages: [{ role: "user", content: "What is the capital of France?" }],
 });
 
 console.log(response.content); // "The capital of France is Paris."
@@ -64,23 +62,21 @@ console.log(response.content); // "The capital of France is Paris."
 ### Structured JSON Responses
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 // Define your schema
-const weatherSchema = z.object({ 
-  city: z.string(), 
+const weatherSchema = z.object({
+  city: z.string(),
   temperature: z.number(),
   conditions: z.string(),
-  humidity: z.number()
+  humidity: z.number(),
 });
 
 // Request structured output
 const response = await service.chat({
-  system: 'You are a weather information bot. Always respond with valid JSON.',
-  messages: [
-    { role: 'user', content: 'What is the weather in Paris?' }
-  ],
-  responseSchema: weatherSchema
+  system: "You are a weather information bot. Always respond with valid JSON.",
+  messages: [{ role: "user", content: "What is the weather in Paris?" }],
+  responseSchema: weatherSchema,
 });
 
 // Validated and typed result
@@ -91,17 +87,16 @@ console.log(response.json); // { city: 'Paris', temperature: 17, ... }
 
 ```typescript
 const response = await service.chat({
-  system: 'You are a travel planner',
-  messages: [
-    { role: 'user', content: 'Plan a 3-day trip to Rome' }
-  ],
-  model: 'openai/gpt-4o',           // Override default model
-  temperature: 0.7,                  // Control randomness
-  max_tokens: 2000,                  // Limit response length
-  top_p: 0.9,                        // Nucleus sampling
-  extraHeaders: {                    // Custom headers
-    'X-Organization': 'my-org'
-  }
+  system: "You are a travel planner",
+  messages: [{ role: "user", content: "Plan a 3-day trip to Rome" }],
+  model: "openai/gpt-4o", // Override default model
+  temperature: 0.7, // Control randomness
+  max_tokens: 2000, // Limit response length
+  top_p: 0.9, // Nucleus sampling
+  extraHeaders: {
+    // Custom headers
+    "X-Organization": "my-org",
+  },
 });
 ```
 
@@ -109,9 +104,7 @@ const response = await service.chat({
 
 ```typescript
 const stream = await service.stream({
-  messages: [
-    { role: 'user', content: 'Write a short story' }
-  ]
+  messages: [{ role: "user", content: "Write a short story" }],
 });
 
 // Process the stream
@@ -119,7 +112,7 @@ const reader = stream.getReader();
 while (true) {
   const { done, value } = await reader.read();
   if (done) break;
-  
+
   // Process chunk
   console.log(value);
 }
@@ -127,15 +120,15 @@ while (true) {
 
 ## Configuration Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `apiKey` | `string` | **required** | OpenRouter API key |
-| `baseUrl` | `string` | `https://openrouter.ai/api/v1` | API endpoint URL (must be HTTPS) |
-| `defaultModel` | `string` | `openai/gpt-3.5-turbo` | Default model to use |
-| `defaultTemperature` | `number` | `undefined` | Default temperature (0-2) |
-| `timeout` | `number` | `60000` | Request timeout in milliseconds |
-| `maxRetries` | `number` | `3` | Maximum retry attempts for transient errors |
-| `fetchFn` | `typeof fetch` | `fetch` | Custom fetch implementation (for testing) |
+| Option               | Type           | Default                        | Description                                 |
+| -------------------- | -------------- | ------------------------------ | ------------------------------------------- |
+| `apiKey`             | `string`       | **required**                   | OpenRouter API key                          |
+| `baseUrl`            | `string`       | `https://openrouter.ai/api/v1` | API endpoint URL (must be HTTPS)            |
+| `defaultModel`       | `string`       | `openai/gpt-3.5-turbo`         | Default model to use                        |
+| `defaultTemperature` | `number`       | `undefined`                    | Default temperature (0-2)                   |
+| `timeout`            | `number`       | `60000`                        | Request timeout in milliseconds             |
+| `maxRetries`         | `number`       | `3`                            | Maximum retry attempts for transient errors |
+| `fetchFn`            | `typeof fetch` | `fetch`                        | Custom fetch implementation (for testing)   |
 
 ## Error Handling
 
@@ -154,25 +147,21 @@ The service provides a comprehensive error hierarchy:
 ### Error Handling Example
 
 ```typescript
-import {
-  OpenRouterHttpError,
-  TimeoutError,
-  JsonValidationError
-} from '@/lib/openrouter';
+import { OpenRouterHttpError, TimeoutError, JsonValidationError } from "@/lib/openrouter";
 
 try {
   const response = await service.chat({
-    messages: [{ role: 'user', content: 'Hello!' }]
+    messages: [{ role: "user", content: "Hello!" }],
   });
 } catch (error) {
   if (error instanceof TimeoutError) {
-    console.error('Request timed out:', error.meta?.timeout);
+    console.error("Request timed out:", error.meta?.timeout);
   } else if (error instanceof OpenRouterHttpError) {
-    console.error('HTTP Error:', error.status, error.body);
+    console.error("HTTP Error:", error.status, error.body);
   } else if (error instanceof JsonValidationError) {
-    console.error('Validation failed:', error.meta?.errors);
+    console.error("Validation failed:", error.meta?.errors);
   } else {
-    console.error('Unexpected error:', error);
+    console.error("Unexpected error:", error);
   }
 }
 ```
@@ -196,7 +185,7 @@ import { OpenRouterService } from '../openrouter';
 
 export class AIService {
   static async generateItinerary(
-    tripNote: TripNoteDTO, 
+    tripNote: TripNoteDTO,
     preferences: UserPreferenceDTO[],
     useMock = false
   ): Promise<AIGenerationResult> {
@@ -229,28 +218,30 @@ The service supports dependency injection for easy testing:
 const mockFetch = vi.fn();
 
 const service = new OpenRouterService({
-  apiKey: 'test-key',
-  fetchFn: mockFetch
+  apiKey: "test-key",
+  fetchFn: mockFetch,
 });
 
 // Configure mock response
 mockFetch.mockResolvedValue({
   ok: true,
   json: async () => ({
-    id: 'test-id',
+    id: "test-id",
     created: Date.now(),
-    model: 'test-model',
+    model: "test-model",
     usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 },
-    choices: [{
-      message: { role: 'assistant', content: 'Test response' },
-      finish_reason: 'stop'
-    }]
-  })
+    choices: [
+      {
+        message: { role: "assistant", content: "Test response" },
+        finish_reason: "stop",
+      },
+    ],
+  }),
 });
 
 // Test your code
 const response = await service.chat({
-  messages: [{ role: 'user', content: 'Test' }]
+  messages: [{ role: "user", content: "Test" }],
 });
 ```
 
@@ -273,6 +264,7 @@ See [OpenRouter Models](https://openrouter.ai/models) for the full list.
 Sends a chat completion request.
 
 **Parameters:**
+
 - `params.system` - System message (instructions)
 - `params.messages` - Array of conversation messages
 - `params.model` - Model identifier (optional)
@@ -283,6 +275,7 @@ Sends a chat completion request.
 - `params.extraHeaders` - Additional HTTP headers (optional)
 
 **Returns:** `ChatSuccess` object with:
+
 - `id` - Completion ID
 - `created` - Unix timestamp
 - `model` - Model used
@@ -301,6 +294,7 @@ Static helper to validate JSON against a Zod schema.
 ## Support
 
 For issues with:
+
 - **This wrapper**: Check error messages and retry logic
 - **OpenRouter API**: See [OpenRouter Docs](https://openrouter.ai/docs)
 - **Model behavior**: Check model documentation on OpenRouter

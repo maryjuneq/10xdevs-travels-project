@@ -14,6 +14,7 @@ Updated the AIService to receive structured JSON responses from the AI with vali
 ### 1. AIService Updates (`src/lib/services/ai.service.ts`)
 
 #### Added Zod Schema for AI Response
+
 ```typescript
 const AIItineraryResponseSchema = z.object({
   itinerary: z.string().min(10, "Itinerary must be at least 10 characters"),
@@ -23,7 +24,9 @@ const AIItineraryResponseSchema = z.object({
 ```
 
 #### Updated AIGenerationResult Interface
+
 **Before:**
+
 ```typescript
 export interface AIGenerationResult {
   itinerary: string;
@@ -33,6 +36,7 @@ export interface AIGenerationResult {
 ```
 
 **After:**
+
 ```typescript
 export interface AIGenerationResult {
   itinerary: string;
@@ -43,6 +47,7 @@ export interface AIGenerationResult {
 ```
 
 Key changes:
+
 - Added `suggestedBudget: number` field
 - Changed `suggestedTripLength` from optional to required
 - Removed null option for more type safety
@@ -50,10 +55,12 @@ Key changes:
 #### Updated generateItinerary Method
 
 **Structured Response Implementation:**
+
 ```typescript
 const response = await service.chat({
-  system: 'You are a professional travel planner. Generate detailed, practical, and personalized travel itineraries. Always respond with valid JSON matching the requested schema.',
-  messages: [{ role: 'user', content: prompt }],
+  system:
+    "You are a professional travel planner. Generate detailed, practical, and personalized travel itineraries. Always respond with valid JSON matching the requested schema.",
+  messages: [{ role: "user", content: prompt }],
   responseSchema: AIItineraryResponseSchema, // ← Added schema
   temperature: 0.7,
   max_tokens: 4000,
@@ -66,11 +73,12 @@ return {
   itinerary: aiResponse.itinerary,
   durationMs,
   suggestedTripLength: aiResponse.suggestedTripLength, // ← From AI
-  suggestedBudget: aiResponse.suggestedBudget,         // ← From AI
+  suggestedBudget: aiResponse.suggestedBudget, // ← From AI
 };
 ```
 
 **Key improvements:**
+
 - ✅ Uses `responseSchema` for automatic validation
 - ✅ Extracts validated JSON via `response.json`
 - ✅ Returns AI-suggested values instead of user input
@@ -91,6 +99,7 @@ Format the response in JSON, providing the following fields:
 ```
 
 **Improvements:**
+
 - ✅ Clear instructions for AI to assess trip length
 - ✅ Clear instructions for AI to assess budget
 - ✅ Handles case when budget not provided
@@ -100,9 +109,10 @@ Format the response in JSON, providing the following fields:
 #### Updated Mock Implementation
 
 Added `suggestedBudget` calculation:
+
 ```typescript
 // Calculate suggested budget (mock logic)
-const suggestedBudget = budgetAmount || (approximateTripLength * 150);
+const suggestedBudget = budgetAmount || approximateTripLength * 150;
 
 return {
   itinerary,
@@ -165,15 +175,18 @@ API Response to Frontend
 ### Example AI Response
 
 **User Input:**
+
 - Destination: Tokyo
 - Suggested Length: 3 days
 - Budget: $500
 
 **AI Assessment:**
+
 - 3 days is too short for Tokyo
 - $500 is below realistic budget
 
 **AI Response (JSON):**
+
 ```json
 {
   "itinerary": "# 5-Day Itinerary for Tokyo\n\n## Day 1: Arrival and Shibuya...",
@@ -187,21 +200,25 @@ API Response to Frontend
 ## Benefits
 
 ### 1. Intelligent Recommendations
+
 - ✅ AI can suggest more realistic trip lengths
 - ✅ AI can recommend appropriate budgets
 - ✅ Considers destination, preferences, and user details
 
 ### 2. Type Safety
+
 - ✅ Zod schema validation ensures data integrity
 - ✅ TypeScript types prevent runtime errors
 - ✅ Automatic error handling for invalid responses
 
 ### 3. Flexibility
+
 - ✅ User suggestions treated as input, not requirements
 - ✅ AI provides expert assessment
 - ✅ Frontend can display both user input and AI recommendations
 
 ### 4. Structured Data
+
 - ✅ JSON response easier to parse and process
 - ✅ No string parsing or regex needed
 - ✅ Consistent structure across requests
@@ -213,24 +230,26 @@ API Response to Frontend
 ### Unit Tests
 
 1. **Schema Validation**
+
    ```typescript
-   test('validates correct AI response', () => {
+   test("validates correct AI response", () => {
      const response = {
-       itinerary: 'Valid itinerary text',
+       itinerary: "Valid itinerary text",
        suggestedTripLength: 5,
-       suggestedBudget: 1000
+       suggestedBudget: 1000,
      };
      expect(() => AIItineraryResponseSchema.parse(response)).not.toThrow();
    });
    ```
 
 2. **Invalid Responses**
+
    ```typescript
-   test('rejects negative trip length', () => {
+   test("rejects negative trip length", () => {
      const response = {
-       itinerary: 'Valid itinerary text',
+       itinerary: "Valid itinerary text",
        suggestedTripLength: -5,
-       suggestedBudget: 1000
+       suggestedBudget: 1000,
      };
      expect(() => AIItineraryResponseSchema.parse(response)).toThrow();
    });
@@ -238,36 +257,37 @@ API Response to Frontend
 
 3. **Mock Implementation**
    ```typescript
-   test('mock returns valid structure', async () => {
+   test("mock returns valid structure", async () => {
      const result = await AIService.generateItinerary(tripNote, preferences, true);
-     expect(result).toHaveProperty('itinerary');
-     expect(result).toHaveProperty('suggestedTripLength');
-     expect(result).toHaveProperty('suggestedBudget');
-     expect(typeof result.suggestedBudget).toBe('number');
+     expect(result).toHaveProperty("itinerary");
+     expect(result).toHaveProperty("suggestedTripLength");
+     expect(result).toHaveProperty("suggestedBudget");
+     expect(typeof result.suggestedBudget).toBe("number");
    });
    ```
 
 ### Integration Tests
 
 1. **Real API Call** (requires API key)
+
    ```typescript
-   test('generates itinerary with structured response', async () => {
+   test("generates itinerary with structured response", async () => {
      const result = await AIService.generateItinerary(tripNote, preferences, false);
      expect(result.suggestedTripLength).toBeGreaterThan(0);
      expect(result.suggestedBudget).toBeGreaterThan(0);
-     expect(result.itinerary).toContain('Day 1');
+     expect(result.itinerary).toContain("Day 1");
    });
    ```
 
 2. **API Endpoint**
    ```typescript
-   test('POST /api/trip-notes/generateItenerary includes suggestedBudget', async () => {
-     const response = await fetch('/api/trip-notes/generateItenerary', {
-       method: 'POST',
-       body: JSON.stringify({ id: 1, ...tripNoteData })
+   test("POST /api/trip-notes/generateItenerary includes suggestedBudget", async () => {
+     const response = await fetch("/api/trip-notes/generateItenerary", {
+       method: "POST",
+       body: JSON.stringify({ id: 1, ...tripNoteData }),
      });
      const data = await response.json();
-     expect(data.itinerary).toHaveProperty('suggestedBudget');
+     expect(data.itinerary).toHaveProperty("suggestedBudget");
    });
    ```
 
@@ -279,21 +299,21 @@ API Response to Frontend
 
 ```typescript
 // API call
-const response = await fetch('/api/trip-notes/generateItenerary', {
-  method: 'POST',
-  body: JSON.stringify(tripNoteData)
+const response = await fetch("/api/trip-notes/generateItenerary", {
+  method: "POST",
+  body: JSON.stringify(tripNoteData),
 });
 
 const data = await response.json();
 
 // Access AI recommendations
-const aiItinerary = data.itinerary.itinerary;        // Markdown text
+const aiItinerary = data.itinerary.itinerary; // Markdown text
 const aiTripLength = data.itinerary.suggestedTripLength; // e.g., 5
-const aiBudget = data.itinerary.suggestedBudget;     // e.g., 1200
+const aiBudget = data.itinerary.suggestedBudget; // e.g., 1200
 
 // Compare with user input
-const userTripLength = data.approximateTripLength;   // e.g., 3
-const userBudget = data.budgetAmount;                // e.g., 500
+const userTripLength = data.approximateTripLength; // e.g., 3
+const userBudget = data.budgetAmount; // e.g., 500
 
 // Display recommendation if different
 if (aiTripLength !== userTripLength) {
@@ -314,12 +334,14 @@ if (userBudget && aiBudget !== userBudget) {
 Currently using: `google/gemini-2.0-flash-exp:free`
 
 This model was chosen for:
+
 - ✅ Free tier availability
 - ✅ Good structured output support
 - ✅ Fast response times
 - ✅ Reliable JSON formatting
 
 Alternative models:
+
 - `openai/gpt-4o-mini` - More accurate but paid
 - `anthropic/claude-3.5-sonnet` - Best quality but expensive
 - `meta-llama/llama-3.1-70b-instruct` - Open source option
@@ -327,6 +349,7 @@ Alternative models:
 ### Prompt Engineering Notes
 
 The prompt is designed to:
+
 1. Provide clear context (destination, dates, group size)
 2. Indicate user suggestions vs requirements
 3. Ask for assessment and alternatives
@@ -359,17 +382,22 @@ The prompt is designed to:
 ### Potential Improvements
 
 1. **Enhanced Validation**
+
    ```typescript
    const AIItineraryResponseSchema = z.object({
      itinerary: z.string().min(100).max(20000),
      suggestedTripLength: z.number().int().min(1).max(365),
      suggestedBudget: z.number().min(100).max(1000000),
      confidence: z.number().min(0).max(1), // How confident is AI?
-     alternatives: z.array(z.object({
-       length: z.number(),
-       budget: z.number(),
-       reason: z.string()
-     })).optional()
+     alternatives: z
+       .array(
+         z.object({
+           length: z.number(),
+           budget: z.number(),
+           reason: z.string(),
+         })
+       )
+       .optional(),
    });
    ```
 
@@ -379,14 +407,15 @@ The prompt is designed to:
    - Modify ItinerariesService.create() method
 
 3. **Budget Breakdown**
+
    ```typescript
    budgetBreakdown: z.object({
      accommodation: z.number(),
      food: z.number(),
      activities: z.number(),
      transportation: z.number(),
-     miscellaneous: z.number()
-   })
+     miscellaneous: z.number(),
+   });
    ```
 
 4. **Multi-Currency Support**
@@ -394,8 +423,8 @@ The prompt is designed to:
    suggestedBudget: z.object({
      amount: z.number(),
      currency: z.string(),
-     usdEquivalent: z.number()
-   })
+     usdEquivalent: z.number(),
+   });
    ```
 
 ---
@@ -418,6 +447,7 @@ The prompt is designed to:
 ## Summary
 
 The AIService now:
+
 1. ✅ Requests structured JSON responses from AI
 2. ✅ Validates responses with Zod schema
 3. ✅ Receives AI-assessed trip length (not just echoing user input)

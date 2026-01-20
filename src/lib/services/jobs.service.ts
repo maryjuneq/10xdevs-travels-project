@@ -29,7 +29,7 @@ function entityToDTO(entity: GenerationJobEntity): GenerationJobDTO {
  * Jobs Service
  * Provides methods for logging AI generation jobs
  */
-export class JobsService {
+export const JobsService = {
   /**
    * Logs a successful AI generation job
    *
@@ -40,7 +40,7 @@ export class JobsService {
    * @returns Promise<GenerationJobDTO> - The created job record in DTO format
    * @throws Error if database operation fails
    */
-  static async logSucceeded(
+  async logSucceeded(
     tripNoteId: number,
     durationMs: number,
     userId: string,
@@ -66,7 +66,7 @@ export class JobsService {
     }
 
     return entityToDTO(data);
-  }
+  },
 
   /**
    * Logs a failed AI generation job
@@ -79,7 +79,7 @@ export class JobsService {
    * @returns Promise<GenerationJobDTO> - The created job record in DTO format
    * @throws InternalServerError if database operation fails
    */
-  static async logFailed(
+  async logFailed(
     tripNoteId: number,
     errorText: string,
     userId: string,
@@ -106,7 +106,7 @@ export class JobsService {
     }
 
     return entityToDTO(data);
-  }
+  },
 
   /**
    * Lists all generation jobs for a specific trip note
@@ -117,7 +117,7 @@ export class JobsService {
    * @returns Promise<GenerationJobDTO[]> - Array of job records in DTO format
    * @throws InternalServerError if database operation fails
    */
-  static async listByTripNote(tripNoteId: number, supabase: SupabaseClient): Promise<GenerationJobDTO[]> {
+  async listByTripNote(tripNoteId: number, supabase: SupabaseClient): Promise<GenerationJobDTO[]> {
     const { data, error } = await supabase
       .from("ai_generation_jobs")
       .select("*")
@@ -134,5 +134,5 @@ export class JobsService {
     }
 
     return data.map(entityToDTO);
-  }
-}
+  },
+};

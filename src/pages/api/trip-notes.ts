@@ -19,11 +19,11 @@ import { createErrorResponse, createJsonResponse } from "../../lib/httpHelpers";
  * @param context - Context string ('creating' or 'fetching') for error messages
  */
 function mapDatabaseError(
-  error: any,
+  error: unknown,
   context: "creating" | "fetching" = "creating"
 ): { status: number; message: string } {
   // Unique constraint violation (user_id, destination, earliest_start_date)
-  if (error.code === "23505") {
+  if (error && typeof error === "object" && "code" in error && error.code === "23505") {
     return {
       status: 409,
       message: "A trip note with this destination and start date already exists",
@@ -75,7 +75,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
 
     // Return paginated result
     return createJsonResponse(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Log error for debugging
     console.error("Error in GET /api/trip-notes:", error);
 
@@ -120,7 +120,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Return created trip note
     return createJsonResponse(tripNote, 201);
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Log error for debugging
     console.error("Error in POST /api/trip-notes:", error);
 
