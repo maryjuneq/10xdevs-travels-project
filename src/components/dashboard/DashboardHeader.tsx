@@ -56,14 +56,14 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
 
         {/* Action Buttons */}
         <div className="flex gap-3">
-          {/* Manage Preferences Button (Secondary) */}
-          <Button variant="outline" asChild>
-            <a href="/preferences">Manage Preferences</a>
-          </Button>
-
           {/* Add Note Button (Primary) */}
           <Button asChild>
             <a href="/trip-notes/new">Add Note</a>
+          </Button>
+
+          {/* Manage Preferences Button (Secondary) */}
+          <Button variant="outline" asChild>
+            <a href="/preferences">Manage Preferences</a>
           </Button>
 
           {/* Logout Button */}
