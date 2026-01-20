@@ -1,4 +1,4 @@
-import type { z } from 'zod';
+import type { z } from "zod";
 
 /**
  * OpenRouter Service Types
@@ -9,7 +9,7 @@ import type { z } from 'zod';
  * Chat message with role and content
  */
 export interface ChatMessage {
-  role: 'user' | 'assistant' | 'system';
+  role: "user" | "assistant" | "system";
   content: string;
 }
 
@@ -19,28 +19,28 @@ export interface ChatMessage {
 export interface ChatParams {
   /** System message - instructions for the model */
   system?: string;
-  
+
   /** Array of conversation messages */
   messages: ChatMessage[];
-  
+
   /** Model identifier - overrides defaultModel */
   model?: string;
-  
+
   /** Optional Zod schema for structured JSON responses */
   responseSchema?: z.ZodSchema;
-  
+
   /** Temperature for response randomness (0-2) */
   temperature?: number;
-  
+
   /** Nucleus sampling parameter */
   top_p?: number;
-  
+
   /** Maximum tokens in response */
   max_tokens?: number;
-  
+
   /** Enable streaming mode */
   stream?: boolean;
-  
+
   /** Additional HTTP headers (e.g., organization routing) */
   extraHeaders?: Record<string, string>;
 }
@@ -51,23 +51,23 @@ export interface ChatParams {
 export interface ChatSuccess {
   /** Unique completion ID */
   id: string;
-  
+
   /** Unix timestamp of completion */
   created: number;
-  
+
   /** Model used for completion */
   model: string;
-  
+
   /** Token usage statistics */
   usage: {
     prompt_tokens: number;
     completion_tokens: number;
     total_tokens: number;
   };
-  
+
   /** Assistant's response content */
   content: string;
-  
+
   /** Validated JSON object when responseSchema is provided */
   json?: unknown;
 }
@@ -78,22 +78,22 @@ export interface ChatSuccess {
 export interface OpenRouterServiceOptions {
   /** OpenRouter API key (required) */
   apiKey: string;
-  
+
   /** Base URL for OpenRouter API - defaults to https://openrouter.ai/api/v1 */
   baseUrl?: string;
-  
+
   /** Default model identifier */
   defaultModel?: string;
-  
+
   /** Default temperature for requests */
   defaultTemperature?: number;
-  
+
   /** Request timeout in milliseconds - defaults to 60000 (60 seconds) */
   timeout?: number;
-  
+
   /** Maximum retry attempts for transient errors - defaults to 3 */
   maxRetries?: number;
-  
+
   /** Custom fetch implementation for dependency injection */
   fetchFn?: typeof fetch;
 }
@@ -110,7 +110,7 @@ export interface OpenRouterRequestPayload {
   max_tokens?: number;
   stream?: boolean;
   response_format?: {
-    type: 'json_schema';
+    type: "json_schema";
     json_schema: {
       name: string;
       strict: boolean;
@@ -132,13 +132,13 @@ export interface OpenRouterResponse {
     completion_tokens: number;
     total_tokens: number;
   };
-  choices: Array<{
+  choices: {
     message: {
       role: string;
       content: string;
     };
     finish_reason: string;
-  }>;
+  }[];
   error?: {
     message: string;
     code?: string;

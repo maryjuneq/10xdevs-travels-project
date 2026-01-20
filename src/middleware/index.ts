@@ -8,17 +8,11 @@ const openRouterApiKey = import.meta.env.OPENROUTER_API_KEY || import.meta.env.A
 if (openRouterApiKey) {
   AIService.initialize(openRouterApiKey);
 } else {
-  console.warn('Warning: OPENROUTER_API_KEY not found. AI Service will use mock implementation.');
+  console.warn("Warning: OPENROUTER_API_KEY not found. AI Service will use mock implementation.");
 }
 
 // Public paths that don't require authentication
-const GUEST_PATHS = [
-  "/login",
-  "/register",
-  "/password-reset",
-  "/password-reset/confirm",
-  "/logout",
-];
+const GUEST_PATHS = ["/login", "/register", "/password-reset", "/password-reset/confirm", "/logout"];
 
 // API paths that don't require authentication
 const PUBLIC_API_PATHS = [
@@ -30,11 +24,7 @@ const PUBLIC_API_PATHS = [
 ];
 
 // Paths that should only be accessible to guest users (redirect if authenticated)
-const GUEST_ONLY_PATHS = [
-  "/login",
-  "/register",
-  "/password-reset",
-];
+const GUEST_ONLY_PATHS = ["/login", "/register", "/password-reset"];
 
 /**
  * Check if a path matches any of the allowed paths
@@ -44,7 +34,7 @@ function isPathAllowed(pathname: string, allowedPaths: string[]): boolean {
     // Exact match
     if (pathname === path) return true;
     // Pattern match for dynamic routes (e.g., /password-reset/[token])
-    if (path.includes('[') && pathname.startsWith(path.split('[')[0])) return true;
+    if (path.includes("[") && pathname.startsWith(path.split("[")[0])) return true;
     // Check if pathname starts with the allowed path (for nested routes)
     if (pathname.startsWith(`${path}/`)) return true;
     return false;
@@ -63,8 +53,8 @@ export const onRequest = defineMiddleware(async ({ locals, cookies, url, request
   }
 
   // Try to restore session from cookies
-  const accessToken = cookies.get('sb-access-token')?.value;
-  const refreshToken = cookies.get('sb-refresh-token')?.value;
+  const accessToken = cookies.get("sb-access-token")?.value;
+  const refreshToken = cookies.get("sb-refresh-token")?.value;
 
   if (accessToken && refreshToken) {
     // Set the session in Supabase client from cookies
@@ -74,21 +64,23 @@ export const onRequest = defineMiddleware(async ({ locals, cookies, url, request
     });
 
     if (error) {
-      console.error('Error setting session from cookies:', error);
+      console.error("Error setting session from cookies:", error);
       // Clear invalid cookies
-      cookies.delete('sb-access-token', { path: '/' });
-      cookies.delete('sb-refresh-token', { path: '/' });
+      cookies.delete("sb-access-token", { path: "/" });
+      cookies.delete("sb-refresh-token", { path: "/" });
     }
   }
 
   // Get user session
-  const { data: { user } } = await supabaseClient.auth.getUser();
+  const {
+    data: { user },
+  } = await supabaseClient.auth.getUser();
 
   // Store user in locals if authenticated
   if (user) {
     locals.user = {
       id: user.id,
-      email: user.email || '',
+      email: user.email || "",
     };
   }
 
@@ -96,7 +88,7 @@ export const onRequest = defineMiddleware(async ({ locals, cookies, url, request
   if (isPathAllowed(pathname, GUEST_ONLY_PATHS)) {
     if (user) {
       // Already authenticated, redirect to dashboard
-      return redirect('/');
+      return redirect("/");
     }
     return next();
   }
@@ -109,7 +101,7 @@ export const onRequest = defineMiddleware(async ({ locals, cookies, url, request
   // All other paths require authentication
   if (!user) {
     // Not authenticated, redirect to login
-    return redirect('/login');
+    return redirect("/login");
   }
 
   return next();

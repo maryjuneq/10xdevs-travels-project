@@ -26,7 +26,7 @@ export class BaseError extends Error {
  */
 export class ConfigurationError extends BaseError {
   constructor(message: string, meta?: Record<string, unknown>) {
-    super(message, 'CONFIGURATION_ERROR', meta);
+    super(message, "CONFIGURATION_ERROR", meta);
   }
 }
 
@@ -36,7 +36,7 @@ export class ConfigurationError extends BaseError {
  */
 export class RequestValidationError extends BaseError {
   constructor(message: string, meta?: Record<string, unknown>) {
-    super(message, 'REQUEST_VALIDATION_ERROR', meta);
+    super(message, "REQUEST_VALIDATION_ERROR", meta);
   }
 }
 
@@ -49,7 +49,7 @@ export class OpenRouterHttpError extends BaseError {
   public readonly body?: string;
 
   constructor(message: string, status: number, body?: string, meta?: Record<string, unknown>) {
-    super(message, 'OPENROUTER_HTTP_ERROR', { ...meta, status, body });
+    super(message, "OPENROUTER_HTTP_ERROR", { ...meta, status, body });
     this.status = status;
     this.body = body;
   }
@@ -61,7 +61,7 @@ export class OpenRouterHttpError extends BaseError {
  */
 export class OpenRouterApiError extends BaseError {
   constructor(message: string, meta?: Record<string, unknown>) {
-    super(message, 'OPENROUTER_API_ERROR', meta);
+    super(message, "OPENROUTER_API_ERROR", meta);
   }
 }
 
@@ -71,7 +71,7 @@ export class OpenRouterApiError extends BaseError {
  */
 export class StreamingError extends BaseError {
   constructor(message: string, meta?: Record<string, unknown>) {
-    super(message, 'STREAMING_ERROR', meta);
+    super(message, "STREAMING_ERROR", meta);
   }
 }
 
@@ -81,7 +81,7 @@ export class StreamingError extends BaseError {
  */
 export class JsonValidationError extends BaseError {
   constructor(message: string, meta?: Record<string, unknown>) {
-    super(message, 'JSON_VALIDATION_ERROR', meta);
+    super(message, "JSON_VALIDATION_ERROR", meta);
   }
 }
 
@@ -91,6 +91,6 @@ export class JsonValidationError extends BaseError {
  */
 export class TimeoutError extends BaseError {
   constructor(message: string, meta?: Record<string, unknown>) {
-    super(message, 'TIMEOUT_ERROR', meta);
+    super(message, "TIMEOUT_ERROR", meta);
   }
 }

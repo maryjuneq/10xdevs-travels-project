@@ -105,8 +105,7 @@ export function useUpdateItinerary(tripNoteId: number) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ itineraryId, text }: { itineraryId: number; text: string }) =>
-      updateItinerary(itineraryId, text),
+    mutationFn: ({ itineraryId, text }: { itineraryId: number; text: string }) => updateItinerary(itineraryId, text),
     onMutate: async ({ text }) => {
       // Cancel any outgoing refetches to prevent optimistic update from being overwritten
       await queryClient.cancelQueries({ queryKey: tripNoteKeys.detail(tripNoteId) });
@@ -158,10 +157,10 @@ export function useTripNote(id: number) {
   const query = useTripNoteQuery(id);
   const createMutation = useCreateTripNote();
   const updateMutation = useUpdateTripNote(id);
-  
+
   // We need a general generate mutation that can work with any ID
   const generateMutationBase = useMutation({
-    mutationFn: ({ noteId, command }: { noteId: number; command: CreateTripNoteCommand }) => 
+    mutationFn: ({ noteId, command }: { noteId: number; command: CreateTripNoteCommand }) =>
       generateItinerary(noteId, command),
     onSuccess: (data, variables) => {
       // Update the detail cache with the new data including the itinerary
@@ -170,7 +169,7 @@ export function useTripNote(id: number) {
       queryClient.invalidateQueries({ queryKey: tripNoteKeys.lists() });
     },
   });
-  
+
   const updateItineraryMutation = useUpdateItinerary(id);
 
   return {
@@ -205,4 +204,3 @@ export function useTripNote(id: number) {
     updateItineraryError: updateItineraryMutation.error as Error | undefined,
   };
 }
-

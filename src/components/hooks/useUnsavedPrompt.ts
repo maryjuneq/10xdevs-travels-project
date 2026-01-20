@@ -5,7 +5,10 @@
 
 import * as React from "react";
 
-export function useUnsavedPrompt(isDirty: boolean, message = "You have unsaved changes. Are you sure you want to leave?") {
+export function useUnsavedPrompt(
+  isDirty: boolean,
+  message = "You have unsaved changes. Are you sure you want to leave?"
+) {
   React.useEffect(() => {
     if (!isDirty) return;
 
@@ -27,4 +30,3 @@ export function useUnsavedPrompt(isDirty: boolean, message = "You have unsaved c
   // For internal navigation (SPA), we would use React Router's useBlocker
   // Since this is an Astro app with mostly page-based routing, the beforeunload is sufficient
 }
-

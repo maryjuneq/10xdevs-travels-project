@@ -63,12 +63,12 @@ export class AuthService {
    */
   static async requestPasswordReset(email: string, redirectTo?: string): Promise<void> {
     const options = redirectTo ? { redirectTo } : undefined;
-    
+
     const { error } = await supabaseClient.auth.resetPasswordForEmail(email, options);
 
     // Log error for debugging but don't expose to user (prevents enumeration)
     if (error) {
-      console.error('Password reset error:', error);
+      console.error("Password reset error:", error);
     }
 
     // Always succeed to prevent user enumeration
@@ -101,10 +101,13 @@ export class AuthService {
    * Get the current authenticated user
    */
   static async getCurrentUser(): Promise<User | null> {
-    const { data: { user }, error } = await supabaseClient.auth.getUser();
+    const {
+      data: { user },
+      error,
+    } = await supabaseClient.auth.getUser();
 
     if (error) {
-      console.error('Error getting current user:', error);
+      console.error("Error getting current user:", error);
       return null;
     }
 
@@ -115,10 +118,13 @@ export class AuthService {
    * Get the current session
    */
   static async getSession(): Promise<Session | null> {
-    const { data: { session }, error } = await supabaseClient.auth.getSession();
+    const {
+      data: { session },
+      error,
+    } = await supabaseClient.auth.getSession();
 
     if (error) {
-      console.error('Error getting session:', error);
+      console.error("Error getting session:", error);
       return null;
     }
 
@@ -131,18 +137,18 @@ export class AuthService {
   private static normalizeError(error: AuthError): Error {
     // Map common Supabase error messages to user-friendly ones
     switch (error.message) {
-      case 'Invalid login credentials':
-        return new Error('Invalid email or password');
-      case 'User already registered':
-        return new Error('An account with this email already exists');
-      case 'Email not confirmed':
-        return new Error('Please confirm your email address');
-      case 'Password should be at least 6 characters':
-        return new Error('Password must be at least 8 characters');
+      case "Invalid login credentials":
+        return new Error("Invalid email or password");
+      case "User already registered":
+        return new Error("An account with this email already exists");
+      case "Email not confirmed":
+        return new Error("Please confirm your email address");
+      case "Password should be at least 6 characters":
+        return new Error("Password must be at least 8 characters");
       default:
         // Log original error for debugging
-        console.error('Auth error:', error);
-        return new Error('Something went wrong. Please try again.');
+        console.error("Auth error:", error);
+        return new Error("Something went wrong. Please try again.");
     }
   }
 }

@@ -21,11 +21,11 @@ interface ImportMetaEnv {
   readonly SUPABASE_KEY: string;
   readonly SUPABASE_SERVICE_ROLE_KEY?: string;
   readonly OPENROUTER_API_KEY: string;
-  
+
   // Client-side (exposed to browser with PUBLIC_ prefix)
   readonly PUBLIC_SUPABASE_URL: string;
   readonly PUBLIC_SUPABASE_ANON_KEY: string;
-  
+
   // Other environment variables
   readonly PROD: boolean;
 }

@@ -12,7 +12,10 @@ export const prerender = false;
 export const POST: APIRoute = async ({ locals }) => {
   try {
     // Get current user from session
-    const { data: { user }, error: userError } = await locals.supabase.auth.getUser();
+    const {
+      data: { user },
+      error: userError,
+    } = await locals.supabase.auth.getUser();
 
     if (userError || !user) {
       return new Response(
@@ -29,14 +32,14 @@ export const POST: APIRoute = async ({ locals }) => {
     // Create a Supabase admin client with service role key
     // This is required to delete users from Supabase Auth
     const supabaseServiceRole = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
-    
+
     if (!supabaseServiceRole) {
       console.error("SUPABASE_SERVICE_ROLE_KEY is not configured");
-      
+
       // Fallback: Just sign out the user and let database cascades handle data deletion
       // This won't delete the auth user but will remove their session
       await locals.supabase.auth.signOut();
-      
+
       return new Response(
         JSON.stringify({
           success: true,
@@ -50,16 +53,12 @@ export const POST: APIRoute = async ({ locals }) => {
     }
 
     // Create admin client for user deletion
-    const supabaseAdmin = createClient<Database>(
-      import.meta.env.SUPABASE_URL,
-      supabaseServiceRole,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
+    const supabaseAdmin = createClient<Database>(import.meta.env.SUPABASE_URL, supabaseServiceRole, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
 
     // Delete user from Supabase Auth using admin client
     // Note: RLS policies and ON DELETE CASCADE should handle related records
@@ -67,9 +66,9 @@ export const POST: APIRoute = async ({ locals }) => {
 
     if (deleteError) {
       console.error("Account deletion error:", deleteError);
-      
+
       // Check if this is a JWT/authentication error with the service role key
-      if (deleteError.status === 403 || deleteError.code === 'bad_jwt') {
+      if (deleteError.status === 403 || deleteError.code === "bad_jwt") {
         console.error("Invalid SUPABASE_SERVICE_ROLE_KEY - key doesn't match the Supabase instance");
         return new Response(
           JSON.stringify({
@@ -81,7 +80,7 @@ export const POST: APIRoute = async ({ locals }) => {
           }
         );
       }
-      
+
       return new Response(
         JSON.stringify({
           error: "Failed to delete account. Please try again.",

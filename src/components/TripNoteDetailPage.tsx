@@ -11,11 +11,7 @@ import { PrimaryActionButton } from "@/components/trip-notes/PrimaryActionButton
 import { ItineraryForm } from "@/components/trip-notes/ItineraryForm";
 import { GenerationModal } from "@/components/trip-notes/GenerationModal";
 import { Toaster } from "@/components/ui/sonner";
-import {
-  ResizablePanelGroup,
-  ResizablePanel,
-  ResizableHandle,
-} from "@/components/ui/resizable";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -112,12 +108,12 @@ function TripNoteDetailPageContent({ id }: TripNoteDetailPageProps) {
       // Read from ref to get current value (avoid stale closure)
       const shouldGenerate = shouldGenerateAfterSaveRef.current;
       const result = await save(values);
-      
+
       // Mark as not dirty after successful save
       setIsDirty(false);
-      
+
       const wasNewNote = !currentNoteId;
-      
+
       // Update current note ID if this was a new note
       if (wasNewNote) {
         setCurrentNoteId(result.id);
@@ -327,4 +323,3 @@ export default function TripNoteDetailPage(props: TripNoteDetailPageProps) {
     </QueryClientProvider>
   );
 }
-

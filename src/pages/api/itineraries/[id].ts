@@ -117,4 +117,3 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
 
 // Disable prerendering for API routes
 export const prerender = false;
-

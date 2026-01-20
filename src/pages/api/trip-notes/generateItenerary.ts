@@ -202,12 +202,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
         const { supabase, user } = locals;
         const userId = user?.id;
         const durationMs = Math.round(performance.now() - startTime);
-        
+
         if (!userId) {
           console.error("Cannot log failed job - user not authenticated");
           return createErrorResponse(500, "AI generation failed");
         }
-        
+
         await JobsService.logFailed(
           tripNoteId,
           `Unexpected error: ${error.message || error}`,

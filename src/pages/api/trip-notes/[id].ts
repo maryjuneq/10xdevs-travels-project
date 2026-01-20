@@ -13,7 +13,13 @@ import type { APIRoute } from "astro";
 import { TripNoteIdParamSchema } from "../../../lib/schemas/tripNoteIdParam.schema";
 import { UpdateTripNoteSchema } from "../../../lib/schemas/tripNote.schema";
 import { TripNotesService } from "../../../lib/services/tripNotes.service";
-import { NotFoundError, ForbiddenError, InternalServerError, ConflictError, ValidationError } from "../../../lib/errors";
+import {
+  NotFoundError,
+  ForbiddenError,
+  InternalServerError,
+  ConflictError,
+  ValidationError,
+} from "../../../lib/errors";
 import { createErrorResponse, createJsonResponse, createNoContentResponse } from "../../../lib/httpHelpers";
 
 /**

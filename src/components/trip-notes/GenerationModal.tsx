@@ -1,12 +1,6 @@
 import * as React from "react";
 import { Loader2, AlertCircle } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export interface GenerationModalProps {
   open: boolean;
@@ -94,7 +88,10 @@ export function GenerationModal({ open, error, onClose }: GenerationModalProps) 
           <div className="flex justify-center py-6">
             <div className="space-y-4 w-full">
               <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                <div className="h-full bg-primary animate-pulse w-full" style={{ animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" }} />
+                <div
+                  className="h-full bg-primary animate-pulse w-full"
+                  style={{ animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" }}
+                />
               </div>
               <div className="text-xs text-center text-muted-foreground">
                 Please do not close this window or navigate away
@@ -106,4 +103,3 @@ export function GenerationModal({ open, error, onClose }: GenerationModalProps) 
     </Dialog>
   );
 }
-

@@ -58,14 +58,8 @@ export const POST: APIRoute = async ({ request }) => {
     const isProduction = import.meta.env.PROD;
     const cookieOptions = `HttpOnly; Path=/; SameSite=Lax; Max-Age=${60 * 60 * 24 * 7}${isProduction ? "; Secure" : ""}`;
 
-    response.headers.append(
-      "Set-Cookie",
-      `sb-access-token=${session.access_token}; ${cookieOptions}`
-    );
-    response.headers.append(
-      "Set-Cookie",
-      `sb-refresh-token=${session.refresh_token}; ${cookieOptions}`
-    );
+    response.headers.append("Set-Cookie", `sb-access-token=${session.access_token}; ${cookieOptions}`);
+    response.headers.append("Set-Cookie", `sb-refresh-token=${session.refresh_token}; ${cookieOptions}`);
 
     return response;
   } catch (error) {

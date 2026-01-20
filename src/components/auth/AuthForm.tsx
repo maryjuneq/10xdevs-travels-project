@@ -95,16 +95,19 @@ export function AuthForm({ mode }: AuthFormProps) {
     }
   }, [mode]);
 
-  const handleInputChange = useCallback((field: FormFieldName) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, [field]: e.target.value }));
-    // Clear field error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
-    // Clear form-level messages
-    if (formError) setFormError("");
-    if (formSuccess) setFormSuccess("");
-  }, [errors, formError, formSuccess]);
+  const handleInputChange = useCallback(
+    (field: FormFieldName) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+      // Clear field error when user starts typing
+      if (errors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: undefined }));
+      }
+      // Clear form-level messages
+      if (formError) setFormError("");
+      if (formSuccess) setFormSuccess("");
+    },
+    [errors, formError, formSuccess]
+  );
 
   const handleSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
@@ -209,7 +212,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             }
 
             setFormSuccess(data.message || "Your password has been reset successfully. You can now sign in.");
-            
+
             // Redirect to login after 2 seconds
             setTimeout(() => {
               window.location.href = "/login";
@@ -257,62 +260,62 @@ export function AuthForm({ mode }: AuthFormProps) {
           )}
           {(mode !== "reset-confirm" || isValidResetToken) && (
             <>
-          <FormError message={formError} />
-          <FormSuccess message={formSuccess} />
+              <FormError message={formError} />
+              <FormSuccess message={formSuccess} />
 
-          {(mode === "login" || mode === "register" || mode === "reset") && (
-            <InputField
-              label="Email"
-              type="email"
-              name="email"
-              autoComplete={mode === "register" ? "email" : "username"}
-              required
-              value={(formData as { email: string }).email}
-              onChange={handleInputChange("email")}
-              error={errors.email}
-              disabled={isPending}
-            />
-          )}
+              {(mode === "login" || mode === "register" || mode === "reset") && (
+                <InputField
+                  label="Email"
+                  type="email"
+                  name="email"
+                  autoComplete={mode === "register" ? "email" : "username"}
+                  required
+                  value={(formData as { email: string }).email}
+                  onChange={handleInputChange("email")}
+                  error={errors.email}
+                  disabled={isPending}
+                />
+              )}
 
-          {(mode === "login" || mode === "register" || mode === "reset-confirm") && (
-            <PasswordField
-              label={mode === "reset-confirm" ? "New Password" : "Password"}
-              name="password"
-              autoComplete={mode === "register" || mode === "reset-confirm" ? "new-password" : "current-password"}
-              required
-              value={(formData as { password: string }).password}
-              onChange={handleInputChange("password")}
-              error={errors.password}
-              disabled={isPending}
-              helperText={
-                mode === "register" || mode === "reset-confirm"
-                  ? "At least 8 characters with a number and letter"
-                  : undefined
-              }
-            />
-          )}
+              {(mode === "login" || mode === "register" || mode === "reset-confirm") && (
+                <PasswordField
+                  label={mode === "reset-confirm" ? "New Password" : "Password"}
+                  name="password"
+                  autoComplete={mode === "register" || mode === "reset-confirm" ? "new-password" : "current-password"}
+                  required
+                  value={(formData as { password: string }).password}
+                  onChange={handleInputChange("password")}
+                  error={errors.password}
+                  disabled={isPending}
+                  helperText={
+                    mode === "register" || mode === "reset-confirm"
+                      ? "At least 8 characters with a number and letter"
+                      : undefined
+                  }
+                />
+              )}
 
-          {(mode === "register" || mode === "reset-confirm") && (
-            <PasswordField
-              label="Confirm Password"
-              name="confirmPassword"
-              autoComplete="new-password"
-              required
-              value={(formData as { confirmPassword: string }).confirmPassword}
-              onChange={handleInputChange("confirmPassword")}
-              error={errors.confirmPassword}
-              disabled={isPending}
-            />
-          )}
+              {(mode === "register" || mode === "reset-confirm") && (
+                <PasswordField
+                  label="Confirm Password"
+                  name="confirmPassword"
+                  autoComplete="new-password"
+                  required
+                  value={(formData as { confirmPassword: string }).confirmPassword}
+                  onChange={handleInputChange("confirmPassword")}
+                  error={errors.confirmPassword}
+                  disabled={isPending}
+                />
+              )}
 
-          <Button 
-            type="submit" 
-            className="w-full" 
-            disabled={isPending || (mode === "reset-confirm" && !isValidResetToken)}
-          >
-            {isPending ? "Processing..." : getSubmitLabel()}
-          </Button>
-          </>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isPending || (mode === "reset-confirm" && !isValidResetToken)}
+              >
+                {isPending ? "Processing..." : getSubmitLabel()}
+              </Button>
+            </>
           )}
         </form>
 
@@ -347,10 +350,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
           {(mode === "reset" || mode === "reset-confirm") && (
             <div className="text-center">
-              <a
-                href="/login"
-                className="text-sm font-medium text-primary hover:text-primary/90 transition-colors"
-              >
+              <a href="/login" className="text-sm font-medium text-primary hover:text-primary/90 transition-colors">
                 Back to sign in
               </a>
             </div>

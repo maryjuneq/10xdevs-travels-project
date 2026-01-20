@@ -7,13 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format, parse } from "date-fns";
 
@@ -77,7 +71,7 @@ export function NoteForm({ initialValues, onSubmit, disabled = false, children, 
   const earliestStartDate = watch("earliestStartDate");
   const latestStartDate = watch("latestStartDate");
   const currency = watch("currency");
-  
+
   const [flexibleDates, setFlexibleDates] = React.useState(
     initialValues ? initialValues.earliestStartDate !== initialValues.latestStartDate : false
   );
@@ -161,8 +155,7 @@ export function NoteForm({ initialValues, onSubmit, disabled = false, children, 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="earliest-start-date">
-              {flexibleDates ? "Earliest Start Date" : "Start Date"}{" "}
-              <span className="text-destructive">*</span>
+              {flexibleDates ? "Earliest Start Date" : "Start Date"} <span className="text-destructive">*</span>
             </Label>
             <DatePicker
               date={parseDate(earliestStartDate)}
@@ -177,9 +170,7 @@ export function NoteForm({ initialValues, onSubmit, disabled = false, children, 
               disabled={disabled}
               fromDate={new Date()}
             />
-            {errors.earliestStartDate && (
-              <p className="text-sm text-destructive">{errors.earliestStartDate.message}</p>
-            )}
+            {errors.earliestStartDate && <p className="text-sm text-destructive">{errors.earliestStartDate.message}</p>}
           </div>
 
           {flexibleDates && (
@@ -197,9 +188,7 @@ export function NoteForm({ initialValues, onSubmit, disabled = false, children, 
                 disabled={disabled}
                 fromDate={parseDate(earliestStartDate) || new Date()}
               />
-              {errors.latestStartDate && (
-                <p className="text-sm text-destructive">{errors.latestStartDate.message}</p>
-              )}
+              {errors.latestStartDate && <p className="text-sm text-destructive">{errors.latestStartDate.message}</p>}
             </div>
           )}
         </div>
@@ -290,9 +279,7 @@ export function NoteForm({ initialValues, onSubmit, disabled = false, children, 
                 ))}
               </SelectContent>
             </Select>
-            {errors.currency && (
-              <p className="text-sm text-destructive">{errors.currency.message}</p>
-            )}
+            {errors.currency && <p className="text-sm text-destructive">{errors.currency.message}</p>}
           </div>
         </div>
 
@@ -319,12 +306,7 @@ export function NoteForm({ initialValues, onSubmit, disabled = false, children, 
       </div>
 
       {/* Render children with form controls */}
-      {children && (
-        <div className="pt-4 border-t">
-          {children({ handleSubmit: triggerSubmit, isValid })}
-        </div>
-      )}
+      {children && <div className="pt-4 border-t">{children({ handleSubmit: triggerSubmit, isValid })}</div>}
     </form>
   );
 }
-

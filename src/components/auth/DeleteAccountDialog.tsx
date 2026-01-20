@@ -81,9 +81,7 @@ export function DeleteAccountDialog({ trigger, onConfirm }: DeleteAccountDialogP
             <div className="font-semibold text-destructive">
               All your trip notes, itineraries, and preferences will be permanently deleted.
             </div>
-            {error && (
-              <div className="text-sm text-destructive font-medium">{error}</div>
-            )}
+            {error && <div className="text-sm text-destructive font-medium">{error}</div>}
           </div>
         </AlertDialogHeader>
         <AlertDialogFooter>

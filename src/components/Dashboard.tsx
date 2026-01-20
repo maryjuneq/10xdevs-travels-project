@@ -21,4 +21,3 @@ export function Dashboard({ userEmail }: DashboardProps) {
     </QueryClientProvider>
   );
 }
-

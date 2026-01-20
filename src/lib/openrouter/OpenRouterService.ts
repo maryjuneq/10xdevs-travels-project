@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import type {
   ChatParams,
   ChatSuccess,
@@ -7,7 +7,7 @@ import type {
   OpenRouterRequestPayload,
   OpenRouterResponse,
   ChatMessage,
-} from './types';
+} from "./types";
 import {
   ConfigurationError,
   RequestValidationError,
@@ -15,26 +15,26 @@ import {
   OpenRouterApiError,
   JsonValidationError,
   TimeoutError,
-} from './errors';
+} from "./errors";
 
 /**
  * OpenRouterService
- * 
+ *
  * A strongly-typed wrapper around the OpenRouter Chat Completion HTTP API.
  * Provides standardized request/response handling with first-class support
  * for structured JSON responses using Zod schemas.
- * 
+ *
  * @example
  * ```ts
- * const service = new OpenRouterService({ 
- *   apiKey: import.meta.env.OPENROUTER_API_KEY 
+ * const service = new OpenRouterService({
+ *   apiKey: import.meta.env.OPENROUTER_API_KEY
  * });
- * 
+ *
  * const response = await service.chat({
  *   system: 'You are a helpful assistant',
  *   messages: [{ role: 'user', content: 'Hello!' }]
  * });
- * 
+ *
  * console.log(response.content);
  * ```
  */
@@ -49,25 +49,25 @@ export class OpenRouterService {
 
   /**
    * Creates a new OpenRouterService instance
-   * 
+   *
    * @param options - Configuration options
    * @throws {ConfigurationError} When apiKey is missing or baseUrl is not HTTPS
    */
   constructor(options: OpenRouterServiceOptions) {
     // Validate required API key
-    if (!options.apiKey || options.apiKey.trim() === '') {
-      throw new ConfigurationError('API key is required', {
-        field: 'apiKey',
+    if (!options.apiKey || options.apiKey.trim() === "") {
+      throw new ConfigurationError("API key is required", {
+        field: "apiKey",
       });
     }
 
     // Set base URL with default
-    const baseUrl = options.baseUrl ?? 'https://openrouter.ai/api/v1';
+    const baseUrl = options.baseUrl ?? "https://openrouter.ai/api/v1";
 
     // Enforce HTTPS for security
-    if (!baseUrl.startsWith('https://')) {
-      throw new ConfigurationError('Base URL must use HTTPS protocol', {
-        field: 'baseUrl',
+    if (!baseUrl.startsWith("https://")) {
+      throw new ConfigurationError("Base URL must use HTTPS protocol", {
+        field: "baseUrl",
         provided: baseUrl,
       });
     }
@@ -83,7 +83,7 @@ export class OpenRouterService {
 
   /**
    * Sends a chat completion request and returns the full parsed response
-   * 
+   *
    * @param params - Chat parameters including messages and optional schema
    * @returns Promise resolving to ChatSuccess with content and optional validated JSON
    * @throws {RequestValidationError} When parameters are invalid
@@ -95,8 +95,8 @@ export class OpenRouterService {
   async chat(params: ChatParams): Promise<ChatSuccess> {
     // Validate messages array is not empty (guard clause)
     if (!params.messages || params.messages.length === 0) {
-      throw new RequestValidationError('Messages array cannot be empty', {
-        field: 'messages',
+      throw new RequestValidationError("Messages array cannot be empty", {
+        field: "messages",
       });
     }
 
@@ -107,10 +107,10 @@ export class OpenRouterService {
 
       // Prepare headers
       const headers: Record<string, string> = {
-        'Authorization': `Bearer ${this.#apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://10xdevs-travels.app', // Optional OpenRouter guidelines
-        'X-Title': '10xDevs Travels', // Optional OpenRouter guidelines
+        Authorization: `Bearer ${this.#apiKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://10xdevs-travels.app", // Optional OpenRouter guidelines
+        "X-Title": "10xDevs Travels", // Optional OpenRouter guidelines
         ...params.extraHeaders,
       };
 
@@ -122,7 +122,7 @@ export class OpenRouterService {
         // Send request
         const url = `${this.#baseUrl}/chat/completions`;
         const response = await this.#fetch(url, {
-          method: 'POST',
+          method: "POST",
           headers,
           body: JSON.stringify(payload),
           signal: abortController.signal,
@@ -132,18 +132,18 @@ export class OpenRouterService {
         await this.#handleHttpErrors(response);
 
         // Parse JSON response
-        const data = await response.json() as OpenRouterResponse;
+        const data = (await response.json()) as OpenRouterResponse;
 
         // Check for API-level errors
         if (data.error) {
-          throw new OpenRouterApiError(data.error.message || 'Unknown API error', {
+          throw new OpenRouterApiError(data.error.message || "Unknown API error", {
             code: data.error.code,
             type: data.error.type,
           });
         }
 
         // Extract content from first choice
-        const content = data.choices?.[0]?.message?.content ?? '';
+        const content = data.choices?.[0]?.message?.content ?? "";
 
         // Build success response
         const result: ChatSuccess = {
@@ -162,7 +162,7 @@ export class OpenRouterService {
         return result;
       } catch (error) {
         // Handle abort/timeout
-        if (error instanceof Error && error.name === 'AbortError') {
+        if (error instanceof Error && error.name === "AbortError") {
           throw new TimeoutError(`Request timed out after ${this.#timeout}ms`, {
             timeout: this.#timeout,
           });
@@ -176,7 +176,7 @@ export class OpenRouterService {
 
   /**
    * Sends a streaming chat completion request
-   * 
+   *
    * @param params - Chat parameters
    * @returns Promise resolving to ReadableStream of incremental tokens
    * @throws {RequestValidationError} When parameters are invalid
@@ -186,8 +186,8 @@ export class OpenRouterService {
   async stream(params: ChatParams): Promise<ReadableStream> {
     // Validate messages array is not empty
     if (!params.messages || params.messages.length === 0) {
-      throw new RequestValidationError('Messages array cannot be empty', {
-        field: 'messages',
+      throw new RequestValidationError("Messages array cannot be empty", {
+        field: "messages",
       });
     }
 
@@ -196,11 +196,11 @@ export class OpenRouterService {
 
     // Prepare headers for streaming
     const headers: Record<string, string> = {
-      'Authorization': `Bearer ${this.#apiKey}`,
-      'Content-Type': 'application/json',
-      'Accept': 'text/event-stream',
-      'HTTP-Referer': 'https://10xdevs-travels.app',
-      'X-Title': '10xDevs Travels',
+      Authorization: `Bearer ${this.#apiKey}`,
+      "Content-Type": "application/json",
+      Accept: "text/event-stream",
+      "HTTP-Referer": "https://10xdevs-travels.app",
+      "X-Title": "10xDevs Travels",
       ...params.extraHeaders,
     };
 
@@ -212,7 +212,7 @@ export class OpenRouterService {
       // Send request
       const url = `${this.#baseUrl}/chat/completions`;
       const response = await this.#fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers,
         body: JSON.stringify(payload),
         signal: abortController.signal,
@@ -223,13 +223,13 @@ export class OpenRouterService {
 
       // Return the response body stream
       if (!response.body) {
-        throw new OpenRouterHttpError('No response body received', response.status);
+        throw new OpenRouterHttpError("No response body received", response.status);
       }
 
       return response.body;
     } catch (error) {
       // Handle abort/timeout
-      if (error instanceof Error && error.name === 'AbortError') {
+      if (error instanceof Error && error.name === "AbortError") {
         throw new TimeoutError(`Request timed out after ${this.#timeout}ms`, {
           timeout: this.#timeout,
         });
@@ -242,7 +242,7 @@ export class OpenRouterService {
 
   /**
    * Static helper to validate JSON string against Zod schema
-   * 
+   *
    * @param schema - Zod schema to validate against
    * @param raw - Raw JSON string
    * @returns Validated and typed object
@@ -254,12 +254,12 @@ export class OpenRouterService {
       return schema.parse(parsed);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new JsonValidationError('Schema validation failed', {
+        throw new JsonValidationError("Schema validation failed", {
           errors: error.errors,
           raw,
         });
       }
-      throw new JsonValidationError('Failed to parse JSON', {
+      throw new JsonValidationError("Failed to parse JSON", {
         error: error instanceof Error ? error.message : String(error),
         raw,
       });
@@ -269,7 +269,7 @@ export class OpenRouterService {
   /**
    * Builds the OpenRouter API request payload
    * Merges system message with messages array and applies model parameters
-   * 
+   *
    * @param params - Chat parameters
    * @returns OpenRouter-compliant request payload
    */
@@ -280,14 +280,14 @@ export class OpenRouterService {
     // Prepend system message if provided
     if (params.system) {
       messages.unshift({
-        role: 'system',
+        role: "system",
         content: params.system,
       });
     }
 
     // Build base payload
     const payload: OpenRouterRequestPayload = {
-      model: params.model ?? this.#defaultModel ?? 'openai/gpt-3.5-turbo',
+      model: params.model ?? this.#defaultModel ?? "openai/gpt-3.5-turbo",
       messages,
     };
 
@@ -316,9 +316,9 @@ export class OpenRouterService {
       // Note: You'll need to install zod-to-json-schema package
       // For now, we'll use a simplified approach
       const schemaName = this.#generateSchemaName(params.responseSchema);
-      
+
       payload.response_format = {
-        type: 'json_schema',
+        type: "json_schema",
         json_schema: {
           name: schemaName,
           strict: true,
@@ -332,30 +332,26 @@ export class OpenRouterService {
 
   /**
    * Handles HTTP-level errors from fetch responses
-   * 
+   *
    * @param response - Fetch response object
    * @throws {OpenRouterHttpError} When status is not 2xx
    */
   async #handleHttpErrors(response: Response): Promise<void> {
     if (!response.ok) {
-      let body = '';
+      let body = "";
       try {
         body = await response.text();
       } catch {
         // Ignore body parsing errors
       }
 
-      throw new OpenRouterHttpError(
-        `HTTP ${response.status}: ${response.statusText}`,
-        response.status,
-        body,
-      );
+      throw new OpenRouterHttpError(`HTTP ${response.status}: ${response.statusText}`, response.status, body);
     }
   }
 
   /**
    * Extracts and validates structured JSON from response content
-   * 
+   *
    * @param content - Assistant response content
    * @param schema - Zod schema for validation
    * @returns Validated JSON object
@@ -368,7 +364,7 @@ export class OpenRouterService {
   /**
    * Generates a schema name from Zod schema
    * Converts camelCase to kebab-case
-   * 
+   *
    * @param schema - Zod schema
    * @returns Schema name in kebab-case
    */
@@ -376,69 +372,71 @@ export class OpenRouterService {
     // Try to get description or use default
     const description = (schema as { description?: string }).description;
     if (description) {
-      return description.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+      return description.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
     }
-    return 'response-schema';
+    return "response-schema";
   }
 
   /**
    * Converts Zod schema to JSON Schema format
    * Uses zod-to-json-schema library for proper conversion
-   * 
+   *
    * @param schema - Zod schema
    * @returns JSON Schema object
    */
   #zodToJsonSchema(schema: z.ZodSchema): unknown {
     return zodToJsonSchema(schema, {
-      target: 'openApi3',
-      $refStrategy: 'none',
+      target: "openApi3",
+      $refStrategy: "none",
     });
   }
 
   /**
    * Wraps an async operation with retry logic for transient errors
    * Uses exponential backoff strategy
-   * 
+   *
    * @param operation - Async operation to retry
    * @returns Result of the operation
    * @throws Last error if all retries are exhausted
    */
   async #withRetry<T>(operation: () => Promise<T>): Promise<T> {
     let lastError: Error | undefined;
-    
+
     for (let attempt = 0; attempt <= this.#maxRetries; attempt++) {
       try {
         return await operation();
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
-        
+
         // Don't retry on non-transient errors
-        if (error instanceof RequestValidationError ||
-            error instanceof ConfigurationError ||
-            error instanceof JsonValidationError ||
-            error instanceof TimeoutError) {
+        if (
+          error instanceof RequestValidationError ||
+          error instanceof ConfigurationError ||
+          error instanceof JsonValidationError ||
+          error instanceof TimeoutError
+        ) {
           throw error;
         }
-        
+
         // Don't retry on client errors (4xx except 429 rate limit)
         if (error instanceof OpenRouterHttpError) {
           if (error.status >= 400 && error.status < 500 && error.status !== 429) {
             throw error;
           }
         }
-        
+
         // If this was the last attempt, throw the error
         if (attempt === this.#maxRetries) {
           throw error;
         }
-        
+
         // Calculate exponential backoff: 1s, 2s, 4s, 8s, etc.
         const delayMs = Math.min(1000 * Math.pow(2, attempt), 10000);
-        await new Promise(resolve => setTimeout(resolve, delayMs));
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
       }
     }
-    
+
     // This should never be reached, but TypeScript needs it
-    throw lastError || new Error('Operation failed after retries');
+    throw lastError || new Error("Operation failed after retries");
   }
 }

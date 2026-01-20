@@ -24,4 +24,3 @@ export const UpdateItinerarySchema = z.object({
  * Type inference from the schema
  */
 export type UpdateItineraryInput = z.infer<typeof UpdateItinerarySchema>;
-

@@ -18,7 +18,7 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Extract username from email (part before @)
-  const userName = userEmail.split('@')[0];
+  const userName = userEmail.split("@")[0];
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -50,7 +50,8 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
       <div className="flex flex-col items-end gap-2">
         {/* Greeting Text */}
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Hello <span className="font-medium text-gray-900 dark:text-gray-100">{userName}</span>, what would you like to do?
+          Hello <span className="font-medium text-gray-900 dark:text-gray-100">{userName}</span>, what would you like to
+          do?
         </p>
 
         {/* Action Buttons */}
@@ -66,12 +67,7 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
           </Button>
 
           {/* Logout Button */}
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-          >
+          <Button variant="ghost" size="sm" onClick={handleLogout} disabled={isLoggingOut}>
             {isLoggingOut ? "Logging out..." : "Logout"}
           </Button>
         </div>

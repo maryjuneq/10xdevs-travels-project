@@ -14,13 +14,7 @@ export function PrimaryActionButton({ mode, onClick, disabled = false, isLoading
   const isSaveAndGenerate = mode === "saveAndGenerate";
 
   return (
-    <Button
-      type="button"
-      onClick={onClick}
-      disabled={disabled || isLoading}
-      className="w-full"
-      size="lg"
-    >
+    <Button type="button" onClick={onClick} disabled={disabled || isLoading} className="w-full" size="lg">
       {isSaveAndGenerate ? (
         <>
           <Sparkles className="mr-2 h-5 w-5" />
@@ -35,4 +29,3 @@ export function PrimaryActionButton({ mode, onClick, disabled = false, isLoading
     </Button>
   );
 }
-

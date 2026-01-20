@@ -88,7 +88,6 @@ export async function fetchTripNoteById(id: number): Promise<TripNoteWithItinera
  * @throws Error if request fails
  */
 export async function createTripNote(command: CreateTripNoteCommand): Promise<TripNoteDTO> {
-
   const response = await fetch("/api/trip-notes", {
     method: "POST",
     headers: {
@@ -114,7 +113,6 @@ export async function createTripNote(command: CreateTripNoteCommand): Promise<Tr
  * @throws Error if request fails
  */
 export async function updateTripNote(id: number, command: UpdateTripNoteCommand): Promise<TripNoteWithItineraryDTO> {
-
   const response = await fetch(`/api/trip-notes/${id}`, {
     method: "PUT",
     headers: {

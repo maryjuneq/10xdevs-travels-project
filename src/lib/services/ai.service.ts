@@ -3,8 +3,8 @@
  * Handles AI-powered itinerary generation using OpenRouter API
  */
 
-import { z } from 'zod';
-import { OpenRouterService } from '../openrouter';
+import { z } from "zod";
+import { OpenRouterService } from "../openrouter";
 import type { TripNoteDTO, UserPreferenceDTO } from "../../types";
 
 /**
@@ -43,13 +43,13 @@ export class AIService {
   /**
    * Initializes the OpenRouter service with API key
    * Call this once at application startup
-   * 
+   *
    * @param apiKey - OpenRouter API key
    */
   static initialize(apiKey: string): void {
     this.openRouterService = new OpenRouterService({
       apiKey,
-      defaultModel: 'openai/gpt-oss-120b:free',
+      defaultModel: "openai/gpt-oss-120b:free",
       defaultTemperature: 0.7,
       timeout: 120000, // 120 seconds (increased for longer responses)
       maxRetries: 3,
@@ -58,13 +58,13 @@ export class AIService {
 
   /**
    * Gets the OpenRouter service instance
-   * 
+   *
    * @returns OpenRouterService instance
    * @throws Error if service is not initialized
    */
   private static getService(): OpenRouterService {
     if (!this.openRouterService) {
-      throw new Error('AIService not initialized. Call AIService.initialize() first.');
+      throw new Error("AIService not initialized. Call AIService.initialize() first.");
     }
     return this.openRouterService;
   }
@@ -79,7 +79,7 @@ export class AIService {
    * @throws Error if generation fails
    */
   static async generateItinerary(
-    tripNote: TripNoteDTO, 
+    tripNote: TripNoteDTO,
     preferences: UserPreferenceDTO[],
     useMock = false
   ): Promise<AIGenerationResult> {
@@ -97,10 +97,9 @@ export class AIService {
       // Call OpenRouter API with structured response schema
       const service = this.getService();
       const response = await service.chat({
-        system: 'You are a professional travel planner. Generate detailed, practical, and personalized travel itineraries. Always respond with valid JSON matching the requested schema. Keep responses concise but informative.',
-        messages: [
-          { role: 'user', content: prompt }
-        ],
+        system:
+          "You are a professional travel planner. Generate detailed, practical, and personalized travel itineraries. Always respond with valid JSON matching the requested schema. Keep responses concise but informative.",
+        messages: [{ role: "user", content: prompt }],
         responseSchema: AIItineraryResponseSchema,
         temperature: 0.7,
         max_tokens: 8000, // Increased to handle longer itineraries
@@ -123,7 +122,9 @@ export class AIService {
       const durationMs = Math.round(endTime - startTime);
 
       console.error("AI generation error:", error);
-      throw new Error(`AI generation failed after ${durationMs}ms: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `AI generation failed after ${durationMs}ms: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -136,7 +137,7 @@ export class AIService {
    * @returns Promise<AIGenerationResult> - Mock result with itinerary
    */
   private static async generateMockItinerary(
-    tripNote: TripNoteDTO, 
+    tripNote: TripNoteDTO,
     preferences: UserPreferenceDTO[],
     startTime: number
   ): Promise<AIGenerationResult> {
@@ -153,7 +154,7 @@ export class AIService {
         : "";
 
     // Calculate suggested budget (mock logic)
-    const budgetValue = budgetAmount || (approximateTripLength * 150); // Default $150/day if not provided
+    const budgetValue = budgetAmount || approximateTripLength * 150; // Default $150/day if not provided
     const suggestedBudget = `${budgetValue} ${currency || "USD"}`;
 
     // Generate mock itinerary text

@@ -80,9 +80,7 @@ export function ItineraryForm({ itinerary, onUpdate, disabled = false }: Itinera
             </Badge>
           )}
           {itinerary.suggestedBudget && itinerary.suggestedBudget.trim() !== "" && (
-            <Badge variant="outline">
-              {itinerary.suggestedBudget}
-            </Badge>
+            <Badge variant="outline">{itinerary.suggestedBudget}</Badge>
           )}
         </div>
 
@@ -111,23 +109,17 @@ export function ItineraryForm({ itinerary, onUpdate, disabled = false }: Itinera
           placeholder="Your itinerary will appear here..."
           aria-label="Itinerary content"
         />
-        
+
         {/* Save Changes Button - only visible when Edit mode is on */}
         {manualEditMode && (
           <div className="mt-4 flex items-center justify-between">
             <div>
-              {isSaving && (
-                <p className="text-xs text-muted-foreground">Saving changes...</p>
-              )}
+              {isSaving && <p className="text-xs text-muted-foreground">Saving changes...</p>}
               {!isSaving && hasUnsavedChanges && (
                 <p className="text-xs text-muted-foreground">You have unsaved changes</p>
               )}
             </div>
-            <Button
-              onClick={handleSaveChanges}
-              disabled={!hasUnsavedChanges || isSaving || disabled}
-              size="sm"
-            >
+            <Button onClick={handleSaveChanges} disabled={!hasUnsavedChanges || isSaving || disabled} size="sm">
               <Save className="h-4 w-4 mr-2" />
               Save Changes
             </Button>
@@ -137,4 +129,3 @@ export function ItineraryForm({ itinerary, onUpdate, disabled = false }: Itinera
     </div>
   );
 }
-
