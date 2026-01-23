@@ -1,0 +1,85 @@
+---
+/**
+ * Preferences Page
+ * Allows authenticated users to manage their travel preferences
+ * Protected by authGuard middleware
+ */
+
+import Layout from "../layouts/Layout.astro";
+import { PreferencesWrapper } from "../components/preferences";
+import { Toaster } from "../components/ui/sonner";
+
+// The page will be protected by authGuard middleware
+// which redirects unauthenticated users to /login
+export const prerender = false;
+
+const pageTitle = "Manage Preferences";
+const pageDescription = "Add and manage your travel preferences to personalize your itineraries";
+---
+
+<Layout title={pageTitle}>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-4">
+            <a
+              href="/"
+              class="p-2 -m-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 focus-visible:ring-2 focus-visible:ring-blue-500 rounded transition-colors"
+              aria-label="Back to Dashboard"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                ></path>
+              </svg>
+            </a>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{pageTitle}</h1>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Page Description -->
+      <div class="mb-8">
+        <p class="text-gray-600 dark:text-gray-400 text-base leading-relaxed">
+          {pageDescription}. The AI will use these preferences when generating your trip itineraries.
+        </p>
+      </div>
+
+      <!-- Preferences Grid -->
+      <PreferencesWrapper client:only="react" />
+
+      <!-- Keyboard shortcuts help -->
+      <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <details class="text-sm text-gray-600 dark:text-gray-400">
+          <summary class="cursor-pointer font-medium hover:text-gray-900 dark:hover:text-gray-100 focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+            Keyboard Shortcuts
+          </summary>
+          <div class="mt-3 space-y-1 pl-4">
+            <p><kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">Enter</kbd> or <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">Space</kbd> - Edit preference</p>
+            <p><kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">Delete</kbd> - Delete preference</p>
+            <p><kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">Arrow Keys</kbd> - Navigate between preferences</p>
+            <p><kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">Ctrl+Enter</kbd> - Save changes</p>
+            <p><kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">Esc</kbd> - Cancel editing</p>
+          </div>
+        </details>
+      </div>
+    </main>
+
+    <!-- Toast notifications -->
+    <Toaster client:only="react" position="top-right" richColors />
+  </div>
+</Layout>

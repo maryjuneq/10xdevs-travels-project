@@ -174,7 +174,6 @@ _All endpoints are mounted under `/api` and protected by Supabase JWT-based sess
 | -------- | ----------------------- | ---------------------------------- |
 | `GET`    | `/api/preferences`      | List preferences for current user. |
 | `POST`   | `/api/preferences`      | Create new preference entry.       |
-| `GET`    | `/api/preferences/{id}` | Get single preference.             |
 | `PUT`    | `/api/preferences/{id}` | Replace preference.                |
 | `DELETE` | `/api/preferences/{id}` | Remove preference.                 |
 

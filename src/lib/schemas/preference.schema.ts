@@ -9,11 +9,11 @@ import { z } from "zod";
  * Schema for validating CreateUserPreferenceCommand
  * Enforces all business rules:
  * - category: optional enum, defaults to 'other'
- * - preferenceText: required, trimmed, 1-255 characters
+ * - preferenceText: required, trimmed, 3-200 characters
  */
 export const CreatePreferenceSchema = z.object({
   category: z.enum(["food", "culture", "adventure", "nature", "other"]).optional().default("other"),
-  preferenceText: z.string().trim().min(1, "Preference cannot be empty").max(255, "Preference too long"),
+  preferenceText: z.string().trim().min(3, "Preference must be at least 3 characters").max(200, "Preference must be at most 200 characters"),
 });
 
 /**
@@ -23,7 +23,7 @@ export const CreatePreferenceSchema = z.object({
 export const UpdatePreferenceSchema = z
   .object({
     category: z.enum(["food", "culture", "adventure", "nature", "other"]).optional(),
-    preferenceText: z.string().trim().min(1).max(255).optional(),
+    preferenceText: z.string().trim().min(3, "Preference must be at least 3 characters").max(200, "Preference must be at most 200 characters").optional(),
   })
   .refine((obj) => Object.keys(obj).length > 0, {
     message: "At least one field must be provided",
