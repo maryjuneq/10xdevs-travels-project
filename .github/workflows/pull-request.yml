@@ -71,6 +71,7 @@ jobs:
             return { owner, repo, pr_number };
 
       - name: Download unit test coverage
+        if: ${{ needs.unit-test.result == 'success' }}
         uses: actions/download-artifact@v4
         with:
           name: unit-coverage
