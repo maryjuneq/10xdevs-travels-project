@@ -193,6 +193,15 @@ export interface UserPreferenceDTO {
 }
 
 /**
+ * DTO for updating user preferences
+ * Used in PUT /api/preferences/{id} request body
+ */
+export interface UpdatePreferenceDTO {
+  category?: PreferenceCategory;
+  preferenceText?: string;
+}
+
+/**
  * Command for creating a new user preference
  * Used in POST /api/preferences
  */
@@ -205,7 +214,20 @@ export interface CreateUserPreferenceCommand {
  * Command for updating an existing user preference
  * Used in PUT /api/preferences/{id}
  */
-export type UpdateUserPreferenceCommand = CreateUserPreferenceCommand;
+export interface UpdatePreferenceCommand {
+  id: number;
+  userId: string; // enforced on server
+  changes: UpdatePreferenceDTO; // validated non-empty object
+}
+
+/**
+ * Command for deleting a user preference
+ * Used in DELETE /api/preferences/{id}
+ */
+export interface DeletePreferenceCommand {
+  id: number;
+  userId: string;
+}
 
 // ============================================================================
 // Pagination and List Responses
