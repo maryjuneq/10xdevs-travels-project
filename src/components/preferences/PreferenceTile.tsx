@@ -67,22 +67,22 @@ export function PreferenceTile({
   // Validate form values
   const validate = (): boolean => {
     const text = formValues.preferenceText.trim();
-    
+
     if (text.length === 0) {
       setValidationError("Preference text is required");
       return false;
     }
-    
+
     if (text.length < 3) {
       setValidationError("Preference text must be at least 3 characters");
       return false;
     }
-    
+
     if (text.length > 200) {
       setValidationError("Preference text must be at most 200 characters");
       return false;
     }
-    
+
     setValidationError(null);
     return true;
   };
@@ -90,7 +90,7 @@ export function PreferenceTile({
   // Handle save click
   const handleSave = () => {
     if (!validate()) return;
-    
+
     onSave({
       category: formValues.category,
       preferenceText: formValues.preferenceText.trim(),
@@ -181,7 +181,10 @@ export function PreferenceTile({
         {/* Saving indicator */}
         {preference.isSaving && (
           <div className="absolute inset-0 bg-white/80 dark:bg-gray-800/80 rounded-lg flex items-center justify-center backdrop-blur-sm">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 dark:border-blue-400" aria-label="Saving" />
+            <div
+              className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 dark:border-blue-400"
+              aria-label="Saving"
+            />
           </div>
         )}
       </div>
@@ -275,7 +278,10 @@ export function PreferenceTile({
       {/* Saving indicator */}
       {preference.isSaving && (
         <div className="absolute inset-0 bg-white/80 dark:bg-gray-800/80 rounded-lg flex items-center justify-center backdrop-blur-sm">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 dark:border-blue-400" aria-label="Saving" />
+          <div
+            className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 dark:border-blue-400"
+            aria-label="Saving"
+          />
         </div>
       )}
     </div>

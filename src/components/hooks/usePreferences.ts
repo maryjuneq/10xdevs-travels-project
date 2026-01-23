@@ -4,12 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  fetchPreferences,
-  createPreference,
-  updatePreference,
-  deletePreference,
-} from "../../lib/api/preferences.api";
+import { fetchPreferences, createPreference, updatePreference, deletePreference } from "../../lib/api/preferences.api";
 import type { UserPreferenceDTO, CreateUserPreferenceCommand, UpdatePreferenceDTO } from "../../types";
 
 const PREFERENCES_QUERY_KEY = ["preferences"];
@@ -93,16 +88,18 @@ export function useUpdatePreference() {
       const previousPreferences = queryClient.getQueryData<UserPreferenceDTO[]>(PREFERENCES_QUERY_KEY);
 
       // Optimistically update
-      queryClient.setQueryData<UserPreferenceDTO[]>(PREFERENCES_QUERY_KEY, (old) =>
-        old?.map((pref) =>
-          pref.id === id
-            ? {
-                ...pref,
-                ...updates,
-                updatedAt: new Date().toISOString(),
-              }
-            : pref
-        ) || []
+      queryClient.setQueryData<UserPreferenceDTO[]>(
+        PREFERENCES_QUERY_KEY,
+        (old) =>
+          old?.map((pref) =>
+            pref.id === id
+              ? {
+                  ...pref,
+                  ...updates,
+                  updatedAt: new Date().toISOString(),
+                }
+              : pref
+          ) || []
       );
 
       // Return context with previous data for rollback

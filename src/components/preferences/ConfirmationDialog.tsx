@@ -42,10 +42,7 @@ export function ConfirmationDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{cancelText}</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
-            className="bg-red-600 hover:bg-red-700 focus-visible:ring-red-500"
-          >
+          <AlertDialogAction onClick={onConfirm} className="bg-red-600 hover:bg-red-700 focus-visible:ring-red-500">
             {confirmText}
           </AlertDialogAction>
         </AlertDialogFooter>
