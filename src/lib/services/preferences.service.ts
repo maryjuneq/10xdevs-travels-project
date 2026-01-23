@@ -5,7 +5,13 @@
  */
 
 import type { SupabaseClient } from "../../db/supabase.client";
-import type { UserPreferenceEntity, UserPreferenceDTO, CreateUserPreferenceCommand, UpdatePreferenceCommand, DeletePreferenceCommand } from "../../types";
+import type {
+  UserPreferenceEntity,
+  UserPreferenceDTO,
+  CreateUserPreferenceCommand,
+  UpdatePreferenceCommand,
+  DeletePreferenceCommand,
+} from "../../types";
 import { InternalServerError } from "../errors";
 
 /**
@@ -68,7 +74,11 @@ export const PreferencesService = {
    * @returns Promise<UserPreferenceDTO> - The created preference in DTO format
    * @throws InternalServerError if database operation fails
    */
-  async create(command: CreateUserPreferenceCommand, userId: string, supabase: SupabaseClient): Promise<UserPreferenceDTO> {
+  async create(
+    command: CreateUserPreferenceCommand,
+    userId: string,
+    supabase: SupabaseClient
+  ): Promise<UserPreferenceDTO> {
     const { data, error } = await supabase
       .from("user_preferences")
       .insert({

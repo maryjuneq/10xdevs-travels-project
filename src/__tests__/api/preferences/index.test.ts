@@ -1,26 +1,37 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { GET, POST } from "../../../pages/api/preferences/index";
 import { PreferencesService } from "../../../lib/services/preferences.service";
-import { createErrorResponse, createJsonResponse } from "../../../lib/httpHelpers";
 import type { UserPreferenceDTO } from "../../../types";
 
 // Mock the PreferencesService
 vi.mock("../../../lib/services/preferences.service", () => ({
   PreferencesService: {
-    create: vi.fn<() => Promise<UserPreferenceDTO>>(),
-    listByUser: vi.fn<() => Promise<UserPreferenceDTO[]>>(),
+    create: vi.fn<() => Promise<UserPreferenceDTO>>() as Mock,
+    listByUser: vi.fn<() => Promise<UserPreferenceDTO[]>>() as Mock,
   },
 }));
 
 describe("GET /api/preferences", () => {
-  let mockSupabase: any;
-  let mockUser: any;
+  let mockSupabase: { from: Mock };
+  let mockUser: { id: string; email: string } | null;
+
+  const mockRequest = {
+    json: vi.fn(),
+  };
+
+  const buildContext = (
+    localsOverride?: Partial<{ supabase: { from: Mock }; user: { id: string; email: string } | null }>
+  ) =>
+    ({
+      request: mockRequest as unknown as Request,
+      locals: { supabase: mockSupabase, user: mockUser, ...localsOverride },
+    }) as unknown as Parameters<typeof GET>[0];
 
   beforeEach(() => {
     vi.clearAllMocks();
 
     mockSupabase = {
-      from: vi.fn(),
+      from: vi.fn() as Mock,
     };
 
     mockUser = {
@@ -48,11 +59,9 @@ describe("GET /api/preferences", () => {
         },
       ];
 
-      (PreferencesService.listByUser as any).mockResolvedValue(mockPreferences);
+      (PreferencesService.listByUser as Mock).mockResolvedValue(mockPreferences);
 
-      const response = await GET({
-        locals: { supabase: mockSupabase, user: mockUser },
-      } as any);
+      const response = await GET(buildContext());
 
       expect(PreferencesService.listByUser).toHaveBeenCalledWith("test-user-id", mockSupabase);
 
@@ -62,11 +71,9 @@ describe("GET /api/preferences", () => {
     });
 
     it("should return empty array when user has no preferences", async () => {
-      (PreferencesService.listByUser as any).mockResolvedValue([]);
+      (PreferencesService.listByUser as Mock).mockResolvedValue([]);
 
-      const response = await GET({
-        locals: { supabase: mockSupabase, user: mockUser },
-      } as any);
+      const response = await GET(buildContext());
 
       expect(PreferencesService.listByUser).toHaveBeenCalledWith("test-user-id", mockSupabase);
 
@@ -78,9 +85,7 @@ describe("GET /api/preferences", () => {
 
   describe("unauthorized access", () => {
     it("should return 401 when user is not authenticated", async () => {
-      const response = await GET({
-        locals: { supabase: mockSupabase, user: null },
-      } as any);
+      const response = await GET(buildContext({ user: null }));
 
       expect(response.status).toBe(401);
       const result = await response.json();
@@ -90,11 +95,9 @@ describe("GET /api/preferences", () => {
 
   describe("service errors", () => {
     it("should return 500 on service failure", async () => {
-      (PreferencesService.listByUser as any).mockRejectedValue(new Error("Database error"));
+      (PreferencesService.listByUser as Mock).mockRejectedValue(new Error("Database error"));
 
-      const response = await GET({
-        locals: { supabase: mockSupabase, user: mockUser },
-      } as any);
+      const response = await GET(buildContext());
 
       expect(response.status).toBe(500);
       const result = await response.json();
@@ -104,14 +107,23 @@ describe("GET /api/preferences", () => {
 });
 
 describe("POST /api/preferences", () => {
-  let mockSupabase: any;
-  let mockUser: any;
+  let mockSupabase: { from: Mock };
+  let mockUser: { id: string; email: string } | null;
+
+  const buildContext = (
+    request: Request,
+    localsOverride?: Partial<{ supabase: { from: Mock }; user: { id: string; email: string } | null }>
+  ) =>
+    ({
+      request,
+      locals: { supabase: mockSupabase, user: mockUser, ...localsOverride },
+    }) as unknown as Parameters<typeof POST>[0];
 
   beforeEach(() => {
     vi.clearAllMocks();
 
     mockSupabase = {
-      from: vi.fn(),
+      from: vi.fn() as Mock,
     };
 
     mockUser = {
@@ -130,7 +142,7 @@ describe("POST /api/preferences", () => {
         updatedAt: "2024-01-23T12:00:00Z",
       };
 
-      (PreferencesService.create as any).mockResolvedValue(mockPreference);
+      (PreferencesService.create as Mock).mockResolvedValue(mockPreference);
 
       const request = new Request("http://localhost/api/preferences", {
         method: "POST",
@@ -141,10 +153,7 @@ describe("POST /api/preferences", () => {
         }),
       });
 
-      const response = await POST({
-        request,
-        locals: { supabase: mockSupabase, user: mockUser },
-      } as any);
+      const response = await POST(buildContext(request));
 
       expect(PreferencesService.create).toHaveBeenCalledWith(
         { category: "food", preferenceText: "I love spicy food" },
@@ -166,7 +175,7 @@ describe("POST /api/preferences", () => {
         updatedAt: "2024-01-23T12:00:00Z",
       };
 
-      (PreferencesService.create as any).mockResolvedValue(mockPreference);
+      (PreferencesService.create as Mock).mockResolvedValue(mockPreference);
 
       const request = new Request("http://localhost/api/preferences", {
         method: "POST",
@@ -176,10 +185,7 @@ describe("POST /api/preferences", () => {
         }),
       });
 
-      const response = await POST({
-        request,
-        locals: { supabase: mockSupabase, user: mockUser },
-      } as any);
+      const response = await POST(buildContext(request));
 
       expect(PreferencesService.create).toHaveBeenCalledWith(
         { category: "other", preferenceText: "I prefer quiet places" },
@@ -203,10 +209,7 @@ describe("POST /api/preferences", () => {
         }),
       });
 
-      const response = await POST({
-        request,
-        locals: { supabase: mockSupabase, user: mockUser },
-      } as any);
+      const response = await POST(buildContext(request));
 
       expect(response.status).toBe(400);
       const result = await response.json();
@@ -225,10 +228,7 @@ describe("POST /api/preferences", () => {
         }),
       });
 
-      const response = await POST({
-        request,
-        locals: { supabase: mockSupabase, user: mockUser },
-      } as any);
+      const response = await POST(buildContext(request));
 
       expect(response.status).toBe(400);
       const result = await response.json();
@@ -246,10 +246,7 @@ describe("POST /api/preferences", () => {
         }),
       });
 
-      const response = await POST({
-        request,
-        locals: { supabase: mockSupabase, user: mockUser },
-      } as any);
+      const response = await POST(buildContext(request));
 
       expect(response.status).toBe(400);
       const result = await response.json();
@@ -264,10 +261,7 @@ describe("POST /api/preferences", () => {
         body: "invalid json",
       });
 
-      const response = await POST({
-        request,
-        locals: { supabase: mockSupabase, user: mockUser },
-      } as any);
+      const response = await POST(buildContext(request));
 
       expect(response.status).toBe(400);
       const result = await response.json();
@@ -285,10 +279,7 @@ describe("POST /api/preferences", () => {
         }),
       });
 
-      const response = await POST({
-        request,
-        locals: { supabase: mockSupabase, user: null },
-      } as any);
+      const response = await POST(buildContext(request, { user: null }));
 
       expect(response.status).toBe(401);
       const result = await response.json();
@@ -298,7 +289,7 @@ describe("POST /api/preferences", () => {
 
   describe("service errors", () => {
     it("should return 500 on service failure", async () => {
-      (PreferencesService.create as any).mockRejectedValue(new Error("Database error"));
+      (PreferencesService.create as Mock).mockRejectedValue(new Error("Database error"));
 
       const request = new Request("http://localhost/api/preferences", {
         method: "POST",
@@ -308,10 +299,7 @@ describe("POST /api/preferences", () => {
         }),
       });
 
-      const response = await POST({
-        request,
-        locals: { supabase: mockSupabase, user: mockUser },
-      } as any);
+      const response = await POST(buildContext(request));
 
       expect(response.status).toBe(500);
       const result = await response.json();

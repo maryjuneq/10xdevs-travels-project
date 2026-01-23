@@ -216,7 +216,7 @@ export interface CreateUserPreferenceCommand {
  */
 export interface UpdatePreferenceCommand {
   id: number;
-  userId: string;           // enforced on server
+  userId: string; // enforced on server
   changes: UpdatePreferenceDTO; // validated non-empty object
 }
 

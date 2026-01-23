@@ -19,8 +19,6 @@ import { createErrorResponse, createJsonResponse } from "../../../lib/httpHelper
 function mapDatabaseError(error: unknown): { status: number; message: string } {
   // Check for constraint violations or other specific database errors
   if (error && typeof error === "object" && "code" in error) {
-    const dbError = error as { code: string; message?: string };
-
     // Handle specific constraint violations if needed
     // For now, default to internal server error
   }
