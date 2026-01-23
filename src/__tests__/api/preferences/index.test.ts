@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from "vitest";
 import { GET, POST } from "../../../pages/api/preferences/index";
 import { PreferencesService } from "../../../lib/services/preferences.service";
 import type { UserPreferenceDTO } from "../../../types";
@@ -27,6 +27,8 @@ describe("GET /api/preferences", () => {
       locals: { supabase: mockSupabase, user: mockUser, ...localsOverride },
     }) as unknown as Parameters<typeof GET>[0];
 
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -38,6 +40,13 @@ describe("GET /api/preferences", () => {
       id: "test-user-id",
       email: "test@example.com",
     };
+
+    // Mock console.error to suppress expected error logs in tests
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   describe("successful retrieval", () => {
@@ -119,6 +128,8 @@ describe("POST /api/preferences", () => {
       locals: { supabase: mockSupabase, user: mockUser, ...localsOverride },
     }) as unknown as Parameters<typeof POST>[0];
 
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -130,6 +141,13 @@ describe("POST /api/preferences", () => {
       id: "test-user-id",
       email: "test@example.com",
     };
+
+    // Mock console.error to suppress expected error logs in tests
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   describe("successful creation", () => {

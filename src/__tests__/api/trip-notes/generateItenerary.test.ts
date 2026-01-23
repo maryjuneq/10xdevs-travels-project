@@ -188,6 +188,8 @@ describe("/api/trip-notes/generateItenerary", () => {
       locals: { ...mockLocals, ...localsOverride },
     }) as Parameters<typeof POST>[0];
 
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset performance mock for each test
@@ -196,9 +198,12 @@ describe("/api/trip-notes/generateItenerary", () => {
       callCount++;
       return callCount * 1000; // Return 1000, 2000, 3000, etc.
     });
+    // Mock console.error to suppress expected error logs in tests
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
   });
 
   afterEach(() => {
+    consoleErrorSpy.mockRestore();
     vi.restoreAllMocks();
   });
 
@@ -584,7 +589,6 @@ describe("/api/trip-notes/generateItenerary", () => {
 
     it("should continue despite job logging failure", async () => {
       const { createJsonResponse } = await import("../../../lib/httpHelpers");
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
 
       mockRequest.json.mockResolvedValue(validRequestBody);
       vi.mocked(TripNotesService.findById).mockResolvedValue(mockTripNoteEntity);
@@ -599,10 +603,8 @@ describe("/api/trip-notes/generateItenerary", () => {
 
       await POST(buildContext());
 
-      expect(consoleSpy).toHaveBeenCalledWith("Warning: Failed to log successful job:", expect.any(Error));
+      expect(consoleErrorSpy).toHaveBeenCalledWith("Warning: Failed to log successful job:", expect.any(Error));
       expect(createJsonResponse).toHaveBeenCalled(); // Should still succeed
-
-      consoleSpy.mockRestore();
     });
   });
 
@@ -687,7 +689,6 @@ describe("/api/trip-notes/generateItenerary", () => {
 
     it("should handle errors when tripNoteId is not available", async () => {
       const { createErrorResponse } = await import("../../../lib/httpHelpers");
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
 
       // Simulate error before tripNoteId is set
       mockRequest.json.mockRejectedValue(new Error("Invalid JSON"));
@@ -696,13 +697,10 @@ describe("/api/trip-notes/generateItenerary", () => {
 
       expect(JobsService.logFailed).not.toHaveBeenCalled();
       expect(createErrorResponse).toHaveBeenCalledWith(400, "Invalid JSON in request body");
-
-      consoleSpy.mockRestore();
     });
 
     it("should handle job logging errors gracefully", async () => {
       const { createErrorResponse } = await import("../../../lib/httpHelpers");
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
 
       mockRequest.json.mockResolvedValue(validRequestBody);
       vi.mocked(TripNotesService.findById).mockRejectedValue(new Error("Unexpected error"));
@@ -710,15 +708,12 @@ describe("/api/trip-notes/generateItenerary", () => {
 
       await POST(buildContext());
 
-      expect(consoleSpy).toHaveBeenCalledWith("Failed to log error to jobs table:", expect.any(Error));
+      expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to log error to jobs table:", expect.any(Error));
       expect(createErrorResponse).toHaveBeenCalled();
-
-      consoleSpy.mockRestore();
     });
 
     it("should handle job logging errors gracefully when logging fails", async () => {
       const { createErrorResponse } = await import("../../../lib/httpHelpers");
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
 
       mockRequest.json.mockResolvedValue(validRequestBody);
       vi.mocked(TripNotesService.findById).mockRejectedValue(new Error("Unexpected error"));
@@ -726,12 +721,10 @@ describe("/api/trip-notes/generateItenerary", () => {
 
       await POST(buildContext());
 
-      expect(consoleSpy).toHaveBeenCalledWith("Failed to log error to jobs table:", expect.any(Error));
+      expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to log error to jobs table:", expect.any(Error));
       expect(createErrorResponse).toHaveBeenCalledWith(500, "An unexpected error occurred", {
         message: "Unexpected error",
       });
-
-      consoleSpy.mockRestore();
     });
   });
 

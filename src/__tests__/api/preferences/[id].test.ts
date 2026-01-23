@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from "vitest";
 import { DELETE } from "../../../pages/api/preferences/[id]";
 import { PreferencesService } from "../../../lib/services/preferences.service";
 import type { SupabaseClient } from "../../../db/supabase.client";
@@ -26,8 +26,19 @@ describe("DELETE /api/preferences/[id]", () => {
       locals: { ...mockLocals, ...localsOverride },
     }) as Parameters<typeof DELETE>[0];
 
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+  let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    // Mock console methods to suppress expected logs in tests
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
+    consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(vi.fn());
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+    consoleInfoSpy.mockRestore();
   });
 
   describe("successful deletion", () => {
