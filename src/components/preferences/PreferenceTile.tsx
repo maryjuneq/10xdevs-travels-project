@@ -67,22 +67,22 @@ export function PreferenceTile({
   // Validate form values
   const validate = (): boolean => {
     const text = formValues.preferenceText.trim();
-    
+
     if (text.length === 0) {
       setValidationError("Preference text is required");
       return false;
     }
-    
+
     if (text.length < 3) {
       setValidationError("Preference text must be at least 3 characters");
       return false;
     }
-    
+
     if (text.length > 200) {
       setValidationError("Preference text must be at most 200 characters");
       return false;
     }
-    
+
     setValidationError(null);
     return true;
   };
@@ -90,7 +90,7 @@ export function PreferenceTile({
   // Handle save click
   const handleSave = () => {
     if (!validate()) return;
-    
+
     onSave({
       category: formValues.category,
       preferenceText: formValues.preferenceText.trim(),
@@ -133,7 +133,7 @@ export function PreferenceTile({
           // Pass through to grid navigation handler (includes Delete, arrow keys)
           onKeyDown?.(e);
         }}
-        className="relative group border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 hover:border-blue-300 dark:hover:border-blue-600 h-[200px] flex flex-col"
+        className="relative group border border-border rounded-lg p-4 bg-card shadow-sm hover:shadow-md transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 hover:border-primary/50 h-[200px] flex flex-col"
         role="button"
         aria-label={`Edit preference: ${preference.preferenceText}`}
       >
@@ -142,15 +142,11 @@ export function PreferenceTile({
           <span className="text-2xl" aria-hidden="true">
             {categoryIcons[preference.category]}
           </span>
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            {categoryLabels[preference.category]}
-          </span>
+          <span className="text-sm font-medium text-foreground">{categoryLabels[preference.category]}</span>
         </div>
 
         {/* Preference text */}
-        <p className="text-gray-900 dark:text-gray-100 text-sm leading-relaxed flex-1 overflow-auto">
-          {preference.preferenceText}
-        </p>
+        <p className="text-card-foreground text-sm leading-relaxed flex-1 overflow-auto">{preference.preferenceText}</p>
 
         {/* Delete button (visible on hover/focus) */}
         <button
@@ -158,12 +154,12 @@ export function PreferenceTile({
             e.stopPropagation();
             onDelete();
           }}
-          className="absolute top-2 right-2 p-1.5 rounded opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-red-50 dark:hover:bg-red-900/20 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 transition-all"
+          className="absolute top-2 right-2 p-1.5 rounded opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-destructive/10 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-destructive transition-all"
           aria-label="Delete preference"
           type="button"
         >
           <svg
-            className="w-4 h-4 text-red-600 dark:text-red-400"
+            className="w-4 h-4 text-destructive"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -180,8 +176,8 @@ export function PreferenceTile({
 
         {/* Saving indicator */}
         {preference.isSaving && (
-          <div className="absolute inset-0 bg-white/80 dark:bg-gray-800/80 rounded-lg flex items-center justify-center backdrop-blur-sm">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 dark:border-blue-400" aria-label="Saving" />
+          <div className="absolute inset-0 bg-card/80 rounded-lg flex items-center justify-center backdrop-blur-sm">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" aria-label="Saving" />
           </div>
         )}
       </div>
@@ -190,11 +186,11 @@ export function PreferenceTile({
 
   // Edit mode
   return (
-    <div className="border-2 border-blue-500 dark:border-blue-400 rounded-lg p-4 bg-white dark:bg-gray-800 shadow-md">
+    <div className="border-2 border-primary rounded-lg p-4 bg-card shadow-md">
       <div className="space-y-4">
         {/* Category select */}
         <div className="space-y-1.5">
-          <label htmlFor={`category-${preference.id}`} className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor={`category-${preference.id}`} className="text-sm font-medium text-foreground">
             Category
           </label>
           <Select
@@ -219,8 +215,8 @@ export function PreferenceTile({
 
         {/* Preference text textarea */}
         <div className="space-y-1.5">
-          <label htmlFor={`text-${preference.id}`} className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Preference <span className="text-gray-500 dark:text-gray-400 font-normal">(3-200 characters)</span>
+          <label htmlFor={`text-${preference.id}`} className="text-sm font-medium text-foreground">
+            Preference <span className="text-muted-foreground font-normal">(3-200 characters)</span>
           </label>
           <Textarea
             ref={textareaRef}
@@ -239,10 +235,10 @@ export function PreferenceTile({
             aria-invalid={!isValid}
           />
           <div className="flex justify-between items-center text-xs">
-            <span className={validationError ? "text-red-600 dark:text-red-400" : "text-gray-500 dark:text-gray-400"}>
+            <span className={validationError ? "text-destructive" : "text-muted-foreground"}>
               {validationError || `${formValues.preferenceText.length}/200 characters`}
             </span>
-            <span className="text-gray-400 dark:text-gray-500 hidden sm:inline">Ctrl+Enter to save, Esc to cancel</span>
+            <span className="text-muted-foreground hidden sm:inline">Ctrl+Enter to save, Esc to cancel</span>
           </div>
         </div>
 
@@ -250,7 +246,7 @@ export function PreferenceTile({
         <div className="flex gap-2 justify-end pt-2">
           <button
             onClick={handleCancel}
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 transition-colors"
+            className="px-4 py-2 text-sm font-medium text-foreground bg-secondary border border-border rounded-md hover:bg-secondary/80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors"
             type="button"
           >
             <span className="flex items-center gap-1.5">
@@ -261,7 +257,7 @@ export function PreferenceTile({
           <button
             onClick={handleSave}
             disabled={!isValid}
-            className="px-4 py-2 text-sm font-medium text-white bg-green-600 dark:bg-green-700 rounded-md hover:bg-green-700 dark:hover:bg-green-600 focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-md hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors"
             type="button"
           >
             <span className="flex items-center gap-1.5">
@@ -274,8 +270,8 @@ export function PreferenceTile({
 
       {/* Saving indicator */}
       {preference.isSaving && (
-        <div className="absolute inset-0 bg-white/80 dark:bg-gray-800/80 rounded-lg flex items-center justify-center backdrop-blur-sm">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 dark:border-blue-400" aria-label="Saving" />
+        <div className="absolute inset-0 bg-card/80 rounded-lg flex items-center justify-center backdrop-blur-sm">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" aria-label="Saving" />
         </div>
       )}
     </div>

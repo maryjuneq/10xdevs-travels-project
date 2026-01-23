@@ -11,7 +11,7 @@ export function FormSuccess({ message }: FormSuccessProps) {
     <div
       role="status"
       aria-live="polite"
-      className="flex items-start gap-2 p-3 text-sm text-green-800 bg-green-50 border border-green-200 rounded-md dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
+      className="flex items-start gap-2 p-3 text-sm text-primary bg-primary/10 border border-primary/30 rounded-md"
     >
       <CheckCircle className="size-4 mt-0.5 shrink-0" />
       <p>{message}</p>

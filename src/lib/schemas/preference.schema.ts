@@ -13,7 +13,11 @@ import { z } from "zod";
  */
 export const CreatePreferenceSchema = z.object({
   category: z.enum(["food", "culture", "adventure", "nature", "other"]).optional().default("other"),
-  preferenceText: z.string().trim().min(3, "Preference must be at least 3 characters").max(200, "Preference must be at most 200 characters"),
+  preferenceText: z
+    .string()
+    .trim()
+    .min(3, "Preference must be at least 3 characters")
+    .max(200, "Preference must be at most 200 characters"),
 });
 
 /**
@@ -23,7 +27,12 @@ export const CreatePreferenceSchema = z.object({
 export const UpdatePreferenceSchema = z
   .object({
     category: z.enum(["food", "culture", "adventure", "nature", "other"]).optional(),
-    preferenceText: z.string().trim().min(3, "Preference must be at least 3 characters").max(200, "Preference must be at most 200 characters").optional(),
+    preferenceText: z
+      .string()
+      .trim()
+      .min(3, "Preference must be at least 3 characters")
+      .max(200, "Preference must be at most 200 characters")
+      .optional(),
   })
   .refine((obj) => Object.keys(obj).length > 0, {
     message: "At least one field must be provided",

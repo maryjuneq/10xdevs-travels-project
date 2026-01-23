@@ -252,7 +252,9 @@ export function PreferencesGrid() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <p className="text-red-600 dark:text-red-400 font-semibold mb-4">Failed to load preferences</p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">{error instanceof Error ? error.message : "Unknown error"}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {error instanceof Error ? error.message : "Unknown error"}
+          </p>
         </div>
       </div>
     );

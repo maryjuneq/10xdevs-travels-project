@@ -44,14 +44,13 @@ export function DashboardHeader({ userEmail }: DashboardHeaderProps) {
   return (
     <div className="mb-8 flex items-center justify-between">
       {/* Page Title */}
-      <h1 className="text-3xl font-bold tracking-tight">My Trips</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-foreground">My Trips</h1>
 
       {/* User Greeting and Action Buttons */}
       <div className="flex flex-col items-end gap-2">
         {/* Greeting Text */}
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Hello <span className="font-medium text-gray-900 dark:text-gray-100">{userName}</span>, what would you like to
-          do?
+        <p className="text-sm text-muted-foreground">
+          Hello <span className="font-medium text-foreground">{userName}</span>, what would you like to do?
         </p>
 
         {/* Action Buttons */}

@@ -3,11 +3,7 @@
  * Handles HTTP requests to the preferences API endpoints
  */
 
-import type {
-  UserPreferenceDTO,
-  CreateUserPreferenceCommand,
-  UpdatePreferenceDTO,
-} from "../../types";
+import type { UserPreferenceDTO, CreateUserPreferenceCommand, UpdatePreferenceDTO } from "../../types";
 
 /**
  * Fetches all user preferences

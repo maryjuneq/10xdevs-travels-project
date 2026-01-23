@@ -11,7 +11,7 @@ export function FormError({ message }: FormErrorProps) {
     <div
       role="alert"
       aria-live="polite"
-      className="flex items-start gap-2 p-3 text-sm text-red-800 bg-red-50 border border-red-200 rounded-md dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
+      className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md"
     >
       <AlertCircle className="size-4 mt-0.5 shrink-0" />
       <p>{message}</p>
