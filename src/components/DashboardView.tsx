@@ -83,12 +83,12 @@ export function DashboardView({ userEmail }: DashboardViewProps) {
 
       {/* Error state */}
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
           <p className="font-medium">Error loading trip notes</p>
           <p className="mt-1 text-sm">{error.message}</p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-3 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+            className="mt-3 rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90"
           >
             Retry
           </button>
@@ -112,12 +112,10 @@ export function DashboardView({ userEmail }: DashboardViewProps) {
       />
 
       {/* Footer with danger zone */}
-      <footer className="mt-16 border-t border-gray-200 dark:border-gray-700 pt-8">
+      <footer className="mt-16 border-t border-border pt-8">
         <div className="text-center">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Danger Zone</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            Permanently delete your account and all associated data
-          </p>
+          <h3 className="text-sm font-semibold text-foreground mb-3">Danger Zone</h3>
+          <p className="text-sm text-muted-foreground mb-4">Permanently delete your account and all associated data</p>
           <DeleteAccountDialog />
         </div>
       </footer>

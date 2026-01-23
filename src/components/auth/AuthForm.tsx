@@ -230,29 +230,25 @@ export function AuthForm({ mode }: AuthFormProps) {
   return (
     <div className="w-full max-w-md space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">{getTitle()}</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">{getTitle()}</h1>
         {mode === "reset" && (
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-sm text-muted-foreground">
             Enter your email address and we&apos;ll send you a link to reset your password.
           </p>
         )}
         {mode === "register" && (
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Join us to start planning your next adventure.
-          </p>
+          <p className="mt-2 text-sm text-muted-foreground">Join us to start planning your next adventure.</p>
         )}
       </div>
 
-      <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8">
+      <div className="bg-card shadow-xl rounded-lg p-8 border border-border">
         <form onSubmit={handleSubmit} className="space-y-6" noValidate>
           {mode === "reset-confirm" && !isValidResetToken && (
             <div className="text-center">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                The password reset link is invalid or has expired.
-              </p>
+              <p className="text-sm text-muted-foreground mb-4">The password reset link is invalid or has expired.</p>
               <a
                 href="/password-reset"
-                className="text-sm font-medium text-primary hover:text-primary/90 transition-colors"
+                className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
               >
                 Request a new reset link
               </a>
@@ -325,14 +321,14 @@ export function AuthForm({ mode }: AuthFormProps) {
               <div className="text-center">
                 <a
                   href="/password-reset"
-                  className="text-sm font-medium text-primary hover:text-primary/90 transition-colors"
+                  className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
                 >
                   Forgot your password?
                 </a>
               </div>
-              <div className="text-center text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-center text-sm text-muted-foreground">
                 Don&apos;t have an account?{" "}
-                <a href="/register" className="font-medium text-primary hover:text-primary/90 transition-colors">
+                <a href="/register" className="font-medium text-primary hover:text-primary/80 transition-colors">
                   Sign up
                 </a>
               </div>
@@ -340,9 +336,9 @@ export function AuthForm({ mode }: AuthFormProps) {
           )}
 
           {mode === "register" && (
-            <div className="text-center text-sm text-gray-600 dark:text-gray-400">
+            <div className="text-center text-sm text-muted-foreground">
               Already have an account?{" "}
-              <a href="/login" className="font-medium text-primary hover:text-primary/90 transition-colors">
+              <a href="/login" className="font-medium text-primary hover:text-primary/80 transition-colors">
                 Sign in
               </a>
             </div>
@@ -350,7 +346,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
           {(mode === "reset" || mode === "reset-confirm") && (
             <div className="text-center">
-              <a href="/login" className="text-sm font-medium text-primary hover:text-primary/90 transition-colors">
+              <a href="/login" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
                 Back to sign in
               </a>
             </div>

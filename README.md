@@ -42,6 +42,19 @@ Testing:
 
 ---
 
+## Design & Styling
+
+VibeTravels features a modern **dark blue theme** designed for a professional, calming user experience. The color scheme uses:
+
+- Deep navy backgrounds for reduced eye strain
+- Vibrant blue accents for interactive elements
+- Excellent contrast for accessibility (WCAG AA compliant)
+- Consistent design system using CSS custom properties
+
+For detailed styling guidelines, see `STYLING_GUIDE.md`.
+
+---
+
 ## Getting Started Locally
 
 ### Prerequisites
